@@ -1,0 +1,921 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Runway: make your student loan last</title>
+<meta name="description" content="Runway turns your student loan into one number to spend each week. Ask before you buy, and see every debt in one place.">
+<link rel="icon" type="image/png" href="/favicon.png">
+<meta name="theme-color" content="#161618">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500..800&family=Instrument+Sans:wght@400..700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#F4F4F1; --panel:#FFFFFF; --panel-2:#EAEAE6; --line:#DCDCD7; --text:#161618; --muted:#5E5E66; --faint:#8E8E96;
+  --accent:#FF5A1F; --on-accent:#161618; --accent-text:#C43E0C;
+  --ok:#17875A; --tight:#A06212; --over:#C92A47;
+  --ok-bg:rgba(23,135,90,.12); --tight-bg:rgba(160,98,18,.13); --over-bg:rgba(201,42,71,.11);
+  --tarmac:#161618; --tarmac-2:#26262B; --tarmac-text:#F4F4F1; --tarmac-muted:#A9A9B1;
+  --scrim:rgba(22,22,24,.45);
+  --shadow:0 24px 60px rgba(22,22,24,.14);
+  --display:'Bricolage Grotesque','Helvetica Neue',Arial,sans-serif;
+  --body:'Instrument Sans',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+  color-scheme:light;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#161618; --panel:#1F1F23; --panel-2:#2A2A2F; --line:#33333A; --text:#F4F4F1; --muted:#A6A6AE; --faint:#73737B;
+    --accent-text:#FF7A45;
+    --ok:#4FD39A; --tight:#F2C14E; --over:#FF6B83;
+    --ok-bg:rgba(79,211,154,.13); --tight-bg:rgba(242,193,78,.13); --over-bg:rgba(255,107,131,.13);
+    --tarmac:#0E0E10; --tarmac-2:#232328;
+    --scrim:rgba(0,0,0,.6);
+    --shadow:0 24px 60px rgba(0,0,0,.45);
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#161618; --panel:#1F1F23; --panel-2:#2A2A2F; --line:#33333A; --text:#F4F4F1; --muted:#A6A6AE; --faint:#73737B;
+  --accent-text:#FF7A45;
+  --ok:#4FD39A; --tight:#F2C14E; --over:#FF6B83;
+  --ok-bg:rgba(79,211,154,.13); --tight-bg:rgba(242,193,78,.13); --over-bg:rgba(255,107,131,.13);
+  --tarmac:#0E0E10; --tarmac-2:#232328;
+  --scrim:rgba(0,0,0,.6);
+  --shadow:0 24px 60px rgba(0,0,0,.45);
+  color-scheme:dark;
+}
+*,*::before,*::after{box-sizing:border-box}
+html{height:100%;scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;height:100%;background:var(--bg);color:var(--text);font-family:var(--body);font-size:16px;line-height:1.45;-webkit-font-smoothing:antialiased}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+a{color:var(--accent-text);text-underline-offset:3px}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px;border-radius:6px}
+img{max-width:100%}
+
+/* ---------- shell ---------- */
+.shell{height:100%;display:grid;grid-template-columns:1fr}
+.about{display:none}
+.app{position:relative;height:100%;min-height:0;overflow:hidden;background:var(--bg)}
+#view{height:100%;display:flex;flex-direction:column;min-height:0}
+@media (min-width:980px){
+  .shell{grid-template-columns:minmax(320px,1fr) 430px;grid-template-rows:minmax(0,1fr);gap:64px;max-width:1160px;margin:0 auto;padding:28px 40px}
+  .about{display:block;align-self:center;max-width:520px;max-height:100%;overflow-y:auto;padding-right:8px}
+  .app{border:1px solid var(--line);border-radius:30px;box-shadow:var(--shadow)}
+}
+.col{display:flex;flex-direction:column;height:100%;min-height:0}
+.main{flex:1;min-height:0;overflow-y:auto;padding:8px 20px 28px}
+
+/* ---------- about panel ---------- */
+.about-brand{display:flex;align-items:center;gap:12px;font-family:var(--display);font-weight:800;font-size:30px;letter-spacing:-.035em}
+.about-brand img{width:44px;height:44px}
+.about h1{font-family:var(--display);font-weight:800;font-size:42px;line-height:1.02;letter-spacing:-.04em;margin:28px 0 14px;text-wrap:balance}
+.about p{color:var(--muted);max-width:46ch;margin:0 0 12px}
+.about h2{font-family:var(--display);font-size:18px;font-weight:700;letter-spacing:-.01em;margin:26px 0 10px}
+.about dl{margin:0;display:grid;gap:14px}
+.about dt{font-weight:600}
+.about dd{margin:2px 0 0;color:var(--muted);max-width:46ch}
+.try{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+.fine{font-size:13px;color:var(--faint);margin-top:28px!important}
+
+/* ---------- top bar ---------- */
+.top{display:flex;align-items:center;justify-content:space-between;padding:16px 20px 8px;flex:none}
+.brand{display:flex;align-items:center;gap:8px;font-family:var(--display);font-weight:800;font-size:21px;letter-spacing:-.035em}
+.brand img{width:28px;height:28px}
+.top-note{font-size:13.5px;color:var(--muted)}
+
+/* ---------- type ---------- */
+.h1{font-family:var(--display);font-weight:800;font-size:32px;line-height:1.05;letter-spacing:-.035em;margin:12px 0 10px}
+.h2{font-family:var(--display);font-weight:700;font-size:19px;letter-spacing:-.015em;margin:30px 0 6px}
+.lead{color:var(--muted);margin:0 0 20px;max-width:40ch}
+.small{font-size:13.5px}
+.muted{color:var(--muted)}
+.empty{color:var(--muted);font-size:15px;margin:6px 0 0}
+
+/* ---------- welcome ---------- */
+.welcome{flex:1;min-height:0;overflow-y:auto;display:flex;flex-direction:column;padding:28px 22px 24px}
+.w-brand{display:flex;align-items:center;gap:10px;font-family:var(--display);font-weight:800;font-size:26px;letter-spacing:-.035em}
+.w-brand img{width:40px;height:40px}
+.w-title{font-family:var(--display);font-weight:800;font-size:clamp(38px,11vw,46px);line-height:1;letter-spacing:-.045em;margin:auto 0 14px;padding-top:40px;text-wrap:balance}
+.w-sub{color:var(--muted);margin:0 0 22px;max-width:38ch}
+.w-actions{margin-top:22px;display:grid;gap:12px}
+.note{margin:0;font-size:14px;color:var(--ok)}
+
+/* ---------- the runway strip ---------- */
+.runway{background:var(--tarmac);color:var(--tarmac-text);border-radius:18px;padding:14px 14px 12px;margin-top:18px}
+.strip-top,.strip-meta{display:flex;justify-content:space-between;gap:12px;font-size:12.5px;color:var(--tarmac-muted)}
+.strip-top strong{color:var(--tarmac-text);font-weight:600}
+.lights{position:relative;display:flex;gap:4px;height:38px;margin:10px 0}
+.lights::after{content:"";position:absolute;left:6px;right:6px;top:50%;border-top:2px dashed rgba(244,244,241,.42);pointer-events:none}
+.week{flex:1;border-radius:5px;background:var(--tarmac-2);position:relative}
+.week::before,.week::after{content:"";position:absolute;left:50%;width:4px;height:4px;margin-left:-2px;border-radius:50%;background:#FFD59A}
+.week::before{top:5px}.week::after{bottom:5px}
+.week.past{background:#1C1C20}
+.week.past::before,.week.past::after{background:#3A3A40}
+.week.now{background:var(--accent)}
+.week.now::before,.week.now::after{background:#161618}
+.week.gone{background:#3A1A22}
+.week.gone::before,.week.gone::after{background:#FF6B83}
+.runway.demo .week{opacity:.25;animation:land .35s ease-out forwards;animation-delay:calc(var(--i) * 80ms + 250ms)}
+@keyframes land{to{opacity:1}}
+@media (prefers-reduced-motion: reduce){.runway.demo .week{animation:none;opacity:1}}
+
+/* ---------- home hero ---------- */
+.hero{padding-top:6px}
+.figure-label{margin:6px 0 0;color:var(--muted);font-size:15px}
+.figure{margin:2px 0 0;font-family:var(--display);font-weight:800;font-size:clamp(58px,17vw,78px);line-height:.95;letter-spacing:-.05em;font-variant-numeric:tabular-nums}
+.figure.neg{color:var(--over)}
+.hero.small .figure{font-size:clamp(48px,14vw,60px)}
+.hero-meta{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-top:12px;font-size:14.5px;color:var(--muted)}
+.hero-line{margin:10px 0 0;color:var(--muted);font-size:15px}
+.reason{margin:12px 0 0;font-size:14.5px;color:var(--muted)}
+.pill{display:inline-flex;align-items:center;gap:6px;padding:4px 10px 4px 9px;border-radius:999px;font-size:13.5px;font-weight:600;white-space:nowrap}
+.pill::before{content:"";width:7px;height:7px;border-radius:50%;background:currentColor}
+.pill.ok{background:var(--ok-bg);color:var(--ok)}
+.pill.tight{background:var(--tight-bg);color:var(--tight)}
+.pill.over{background:var(--over-bg);color:var(--over)}
+
+.banner{margin-top:16px;padding:14px 16px;border-radius:16px;background:var(--panel);border:1px solid var(--line)}
+.banner p{margin:0 0 10px}
+.banner .links{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:14.5px}
+.banner.warn{border-color:var(--over);background:var(--over-bg)}
+
+/* ---------- categories ---------- */
+.cat{display:grid;grid-template-columns:1fr auto;gap:7px 12px;padding:13px 0;border-bottom:1px solid var(--line)}
+.cat:last-child{border-bottom:0}
+.cat-name{font-weight:500}
+.cat-val{color:var(--muted);font-size:14.5px;font-variant-numeric:tabular-nums}
+.cat-main .cat-name{font-weight:700}
+.bar{grid-column:1/-1;display:block;height:6px;border-radius:3px;background:var(--panel-2);overflow:hidden}
+.bar i{display:block;height:100%;background:var(--text);border-radius:3px;transition:width .4s ease}
+.cat-main .bar i{background:var(--accent)}
+.bar i.over{background:var(--over)}
+
+/* ---------- entries ---------- */
+.entries{list-style:none;margin:0;padding:0}
+.entry{display:grid;grid-template-columns:1fr auto auto;align-items:center;gap:10px;padding:11px 0;border-bottom:1px solid var(--line)}
+.entry:last-child{border-bottom:0}
+.entry-title{font-weight:500}
+.entry-sub{display:block;font-size:13px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:28ch}
+.entry-amt{font-variant-numeric:tabular-nums;font-weight:600}
+.entry-amt.in{color:var(--ok)}
+
+/* ---------- composer + nav ---------- */
+.composer{flex:none;border-top:1px solid var(--line);padding:10px 14px 10px;background:var(--bg)}
+.chips{display:flex;gap:6px;overflow-x:auto;padding-bottom:10px;scrollbar-width:none}
+.chips::-webkit-scrollbar{display:none}
+.chip{flex:none;border:1px solid var(--line);background:var(--panel);border-radius:999px;padding:7px 13px;font-size:13.5px;white-space:nowrap}
+.chip:hover{border-color:var(--text)}
+.row{display:flex;gap:8px;align-items:center}
+.ask{flex:1;min-width:0;height:48px;border-radius:15px;border:1px solid var(--line);background:var(--panel);padding:0 14px;font-size:16px}
+.ask::placeholder{color:var(--faint)}
+.icon-btn{flex:none;width:48px;height:48px;border-radius:15px;border:1px solid var(--line);background:var(--panel);display:grid;place-items:center;padding:0}
+.icon-btn.small{width:40px;height:40px;border-radius:12px}
+.icon-btn.send{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
+.icon-btn.rec{background:var(--over);border-color:var(--over);color:#fff;animation:pulse 1.2s ease-in-out infinite}
+@keyframes pulse{50%{transform:scale(.94)}}
+@media (prefers-reduced-motion: reduce){.icon-btn.rec{animation:none}}
+.nav{flex:none;display:flex;border-top:1px solid var(--line);background:var(--bg)}
+.nav button{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding:9px 0 11px;border:0;background:none;color:var(--muted);font-size:12.5px;min-height:56px}
+.nav button[aria-current="page"]{color:var(--text);font-weight:600}
+.nav button[aria-current="page"] svg{color:var(--accent)}
+
+/* ---------- buttons + fields ---------- */
+.btn{height:52px;border-radius:15px;border:0;padding:0 20px;font-weight:600;font-size:16px}
+.btn-block{width:100%}
+.btn-primary{background:var(--accent);color:var(--on-accent)}
+.btn-ghost{background:var(--panel-2);color:var(--text)}
+.btn-danger{background:var(--over-bg);color:var(--over)}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.link{background:none;border:0;padding:6px 0;color:var(--accent-text);font-weight:600;text-align:left;font-size:15px}
+.back{background:none;border:0;padding:8px 0;color:var(--muted);font-size:15px}
+.lbl{display:block;font-size:13.5px;color:var(--muted);margin-bottom:6px}
+.fr{margin-bottom:14px;min-width:0}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.inp{width:100%;height:46px;border-radius:12px;border:1px solid var(--line);background:var(--panel);padding:0 12px;font-size:16px}
+select.inp{padding-right:6px}
+.money-wrap{position:relative}
+.money-wrap span{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--muted);pointer-events:none}
+.money-wrap .inp{padding-left:26px;font-variant-numeric:tabular-nums}
+.check{display:flex;gap:12px;align-items:flex-start;padding:14px 0;border-top:1px solid var(--line);font-size:15px}
+.check:last-of-type{border-bottom:1px solid var(--line);margin-bottom:22px}
+.check input{width:22px;height:22px;margin:1px 0 0;accent-color:var(--accent);flex:none}
+.cost-row{display:grid;grid-template-columns:1fr 92px 104px 40px;gap:6px;align-items:center;margin-bottom:8px}
+.cost-row .inp{height:42px;padding:0 10px}
+.footer-bar{flex:none;padding:12px 20px 16px;border-top:1px solid var(--line);background:var(--bg)}
+input[type=range]{width:100%;accent-color:var(--accent)}
+.invite{display:grid;gap:4px}
+.pad{flex:1;min-height:0;overflow-y:auto;padding:12px 22px 24px}
+
+/* ---------- chat ---------- */
+.chat{display:flex;flex-direction:column}
+.msg{max-width:86%;padding:11px 14px;border-radius:18px;font-size:15.5px;line-height:1.45;margin:6px 0}
+.msg.bot{background:var(--panel);border:1px solid var(--line);border-bottom-left-radius:6px;align-self:flex-start}
+.msg.me{background:var(--accent);color:var(--on-accent);border-bottom-right-radius:6px;align-self:flex-end}
+.example{margin-top:auto;text-align:left;border:1px dashed var(--faint);background:none;border-radius:16px;padding:12px 14px;font-size:14.5px;color:var(--muted)}
+.example strong{display:block;color:var(--text);margin-bottom:4px;font-weight:600}
+
+/* ---------- debts ---------- */
+.debt{padding:4px 0 14px;border-bottom:1px solid var(--line)}
+.debt-head{width:100%;display:flex;justify-content:space-between;gap:12px;align-items:center;background:none;border:0;padding:10px 0 10px;text-align:left}
+.debt-name{display:block;font-weight:600}
+.debt-sub{display:block;font-size:13.5px;color:var(--muted)}
+.debt-sub.late{color:var(--over)}
+.debt-amt{font-family:var(--display);font-weight:700;font-size:22px;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+.sched{list-style:none;margin:14px 0 6px;padding:0}
+.sched li{display:grid;grid-template-columns:1fr auto auto;gap:12px;align-items:center;padding:8px 0;font-size:15px}
+.sched .done{color:var(--ok);font-size:13.5px;font-weight:600}
+.mini{border:1px solid var(--line);background:var(--panel);border-radius:10px;padding:6px 10px;font-size:13.5px}
+.facts{display:grid;grid-template-columns:1fr auto;gap:4px 12px;font-size:14.5px;margin:10px 0}
+.facts span:nth-child(even){text-align:right;font-variant-numeric:tabular-nums;font-weight:600}
+.sl{padding-top:4px}
+.repay{font-family:var(--display);font-size:22px;letter-spacing:-.02em;margin:4px 0 10px}
+
+/* ---------- me ---------- */
+.kv{display:flex;justify-content:space-between;gap:12px;padding:12px 0;border-bottom:1px solid var(--line);font-size:15.5px}
+.kv span:last-child{font-variant-numeric:tabular-nums;font-weight:600;text-align:right}
+.stack{display:grid;gap:10px;margin-top:18px}
+.toggle{display:flex;gap:12px;align-items:flex-start;font-size:15px}
+.toggle input{width:22px;height:22px;accent-color:var(--accent);flex:none;margin:0}
+
+/* ---------- sheet ---------- */
+.scrim{position:absolute;inset:0;background:var(--scrim);display:flex;align-items:flex-end;z-index:20;animation:fade .18s ease-out}
+.sheet{width:100%;max-height:90%;overflow-y:auto;background:var(--panel);border-radius:24px 24px 0 0;padding:10px 20px 18px;animation:rise .24s cubic-bezier(.2,.8,.2,1)}
+@keyframes fade{from{opacity:0}}
+@keyframes rise{from{transform:translateY(30px);opacity:.6}}
+@media (prefers-reduced-motion: reduce){.scrim,.sheet{animation:none}}
+.grab{display:block;width:40px;height:4px;border-radius:2px;background:var(--line);margin:0 auto 12px}
+.sheet-title{font-family:var(--display);font-weight:800;font-size:25px;letter-spacing:-.03em;margin:4px 0 6px}
+.heard{margin:0 0 16px;font-size:14px;color:var(--muted)}
+.sheet .inp{background:var(--bg)}
+.impact{border-radius:16px;background:var(--bg);padding:6px 14px;margin:4px 0 12px}
+.imp-row{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:9px 0;border-bottom:1px solid var(--line);font-size:15px}
+.imp-row:last-child{border-bottom:0}
+.imp-row strong{font-variant-numeric:tabular-nums}
+.imp-row .was{color:var(--muted);font-variant-numeric:tabular-nums}
+.summary{margin:0 0 6px;font-size:15.5px}
+.handoff{margin:0 0 4px;font-size:13.5px;color:var(--muted)}
+.sheet-actions{display:grid;grid-template-columns:1fr 1.4fr;gap:10px;margin-top:16px}
+.sheet-actions.one{grid-template-columns:1fr}
+.res{list-style:none;margin:6px 0 12px;padding:0}
+.res li{padding:10px 0;border-bottom:1px solid var(--line);font-size:15px}
+.res li:last-child{border-bottom:0}
+.res span{display:block;font-size:13.5px;color:var(--muted)}
+textarea.inp{height:180px;padding:10px;font-size:12.5px;font-family:ui-monospace,Menlo,monospace}
+
+/* ---------- sign-up ---------- */
+.pw-wrap{position:relative}
+.pw-wrap .inp{padding-right:68px}
+.pw-toggle{position:absolute;right:6px;top:50%;transform:translateY(-50%);background:none;border:0;color:var(--accent-text);font-weight:600;font-size:14px;padding:8px}
+.hint{font-size:13px;color:var(--muted);margin:6px 0 0}
+.hint.good{color:var(--ok)}
+.err{font-size:13px;color:var(--over);margin:6px 0 0}
+.inp[aria-invalid="true"]{border-color:var(--over)}
+.signup-note{font-size:13px;color:var(--muted);margin:14px 0 0;text-align:center}
+
+/* ---------- website ---------- */
+body.mode-site .shell{display:none}
+body:not(.mode-site) #site{display:none}
+body.mode-site::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:11;background:var(--bg)}
+.wrap{max-width:1120px;margin:0 auto;padding:0 24px}
+.site-head{position:sticky;top:env(safe-area-inset-top,0px);z-index:10;background:var(--bg);border-bottom:1px solid var(--line)}
+.site-head .wrap{display:flex;align-items:center;justify-content:space-between;gap:20px;height:68px}
+.site-nav{display:flex;gap:2px}
+.site-nav button{background:none;border:0;padding:8px 12px;border-radius:10px;color:var(--muted);font-size:15px}
+.site-nav button:hover{color:var(--text)}
+.head-cta{display:flex;gap:8px;align-items:center}
+.btn-sm{height:42px;border-radius:12px;padding:0 16px;font-size:15px}
+@media (max-width:860px){.site-nav{display:none}}
+.s-hero{padding:72px 0 56px}
+.s-hero h1{font-family:var(--display);font-weight:800;font-size:clamp(46px,8.6vw,108px);line-height:.93;letter-spacing:-.055em;margin:0;max-width:11ch}
+.lede{font-size:clamp(17px,2vw,20px);color:var(--muted);max-width:46ch;margin:24px 0 28px}
+.cta-row{display:flex;gap:10px;flex-wrap:wrap}
+.cta-row .btn{padding:0 24px}
+.cta-note{font-size:14px;color:var(--muted);margin:14px 0 0}
+.big-runway{margin-top:56px;background:var(--tarmac);color:var(--tarmac-text);border-radius:26px;padding:26px 26px 20px}
+.big-runway .br-top{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:wrap}
+.br-who{font-size:14px;color:var(--tarmac-muted);margin:0}
+.br-fig{font-family:var(--display);font-weight:800;font-size:clamp(44px,7vw,80px);letter-spacing:-.05em;line-height:.95;margin:4px 0 0;color:var(--accent)}
+.br-fig small{font-size:.32em;letter-spacing:-.01em;color:var(--tarmac-text);font-weight:600;margin-left:8px}
+.big-runway .lights{height:clamp(48px,8vw,76px);gap:6px;margin:22px 0 14px}
+.big-runway .strip-meta{font-size:14px}
+.s-sec{padding:88px 0;border-top:1px solid var(--line)}
+.s-sec h2{font-family:var(--display);font-weight:800;font-size:clamp(34px,4.8vw,58px);line-height:1;letter-spacing:-.045em;margin:0 0 16px;max-width:17ch;text-wrap:balance}
+.s-sec .intro{color:var(--muted);font-size:18px;max-width:54ch;margin:0 0 44px}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:32px}
+.stat strong{display:block;font-family:var(--display);font-weight:800;font-size:clamp(44px,5vw,60px);letter-spacing:-.045em;line-height:1;margin-bottom:8px}
+.stat span{color:var(--muted);font-size:17px;display:block;max-width:24ch}
+.source{font-size:13px;color:var(--faint);margin:32px 0 0}
+.steps{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(3,1fr);gap:32px;counter-reset:st}
+.steps li{counter-increment:st}
+.steps li::before{content:counter(st);display:grid;place-items:center;width:36px;height:36px;border-radius:11px;background:var(--accent);color:var(--on-accent);font-family:var(--display);font-weight:800;margin-bottom:18px}
+.steps h3,.feat h3,.plan h3{font-family:var(--display);font-weight:700;letter-spacing:-.02em}
+.steps h3{font-size:22px;margin:0 0 8px}
+.steps p{color:var(--muted);margin:0;max-width:34ch}
+.feat{display:grid;grid-template-columns:1fr 1fr;gap:56px;align-items:center;padding:40px 0}
+.feat+.feat{border-top:1px solid var(--line)}
+.feat h3{font-size:clamp(26px,3vw,34px);font-weight:800;letter-spacing:-.035em;margin:0 0 12px}
+.feat p{color:var(--muted);margin:0;max-width:44ch;font-size:17px}
+.screen{background:var(--panel);border:1px solid var(--line);border-radius:24px;padding:22px}
+.screen .impact{background:var(--bg)}
+.demo-btns{display:grid;grid-template-columns:1fr 1.4fr;gap:8px;margin-top:14px}
+.demo-btns span{display:grid;place-items:center;height:44px;border-radius:12px;font-weight:600;font-size:15px}
+.demo-btns span:first-child{background:var(--panel-2)}
+.demo-btns span:last-child{background:var(--accent);color:var(--on-accent)}
+.s-list{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(3,1fr);gap:28px}
+.s-list li{border-top:2px solid var(--text);padding-top:16px}
+.s-list strong{display:block;font-size:18px;margin-bottom:6px}
+.s-list span{color:var(--muted)}
+.plans{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.plan{border:1px solid var(--line);border-radius:22px;padding:26px;background:var(--panel)}
+.plan.lead-plan{border:2px solid var(--accent)}
+.plan h3{font-size:19px;margin:0 0 14px}
+.price{font-family:var(--display);font-weight:800;font-size:44px;letter-spacing:-.045em;line-height:1;margin:0 0 10px}
+.price small{font-size:16px;font-weight:600;letter-spacing:0;color:var(--muted);margin-left:4px}
+.plan p{color:var(--muted);margin:0}
+.trust{background:var(--tarmac);color:var(--tarmac-text);border-radius:28px;padding:clamp(28px,5vw,56px)}
+.trust h2{color:var(--tarmac-text)}
+.trust .intro{color:var(--tarmac-muted)}
+.trust .s-list li{border-top-color:var(--accent)}
+.trust .s-list span{color:var(--tarmac-muted)}
+.trust .intro{margin-bottom:36px}
+.faq{max-width:760px}
+.faq details{border-bottom:1px solid var(--line)}
+.faq summary{cursor:pointer;list-style:none;padding:20px 36px 20px 0;font-weight:600;font-size:18px;position:relative}
+.faq summary::-webkit-details-marker{display:none}
+.faq summary::after{content:"+";position:absolute;right:4px;top:50%;transform:translateY(-50%);font-size:24px;color:var(--accent-text);font-weight:400}
+.faq details[open] summary::after{content:"\2212"}
+.faq details p{margin:0 0 20px;color:var(--muted);max-width:62ch}
+.final{text-align:left;padding:96px 0}
+.final h2{max-width:14ch}
+.site-foot{border-top:1px solid var(--line);padding:32px 0 40px;color:var(--muted);font-size:14px}
+.site-foot .wrap{display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap;align-items:center}
+.brand-btn{background:none;border:0;padding:0;color:inherit}
+@media (max-width:820px){
+  .stats,.steps,.s-list,.plans{grid-template-columns:1fr}
+  .feat{grid-template-columns:1fr;gap:24px}
+  .s-sec{padding:64px 0}
+  .s-hero{padding:48px 0 40px}
+}
+.link.inline{padding:0;font-size:inherit}
+.forgot{margin:14px 0 0;padding:14px 16px;border-radius:14px;background:var(--panel);border:1px solid var(--line);font-size:14.5px;color:var(--muted)}
+
+/* ---------- toast ---------- */
+.toast{position:absolute;left:50%;top:14px;transform:translate(-50%,-20px);opacity:0;pointer-events:none;background:var(--text);color:var(--bg);padding:10px 16px;border-radius:12px;font-size:14.5px;font-weight:500;z-index:40;transition:opacity .2s,transform .2s;max-width:calc(100% - 32px);text-align:center}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+</style>
+</head>
+<body>
+<div id="site" class="site"></div>
+<div class="shell">
+  <aside class="about" aria-label="About Runway">
+    <div class="about-brand"><img src="data:image/png;base64,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" alt="" width="44" height="44"><span>Runway</span></div>
+    <h1>Start-ups run out of cash. Students do too.</h1>
+    <p>Runway turns a lump-sum student loan into a weekly number, lets students check a purchase before they make it, and keeps BNPL, overdrafts and the student loan in one view.</p>
+    <h2>What it does</h2>
+    <dl>
+      <div><dt>A weekly figure you can trust</dt><dd>Sets aside rent and regular costs, then spreads what’s left across the weeks until the next loan payment lands.</dd></div>
+      <div><dt>Ask before you spend</dt><dd>Shows what a purchase does to this week and next, then hands the decision back. No lectures, no verdicts.</dd></div>
+      <div><dt>Every debt in one place</dt><dd>Shows the real cost of Klarna, an overdraft or a loan before it’s added, and what the student loan means after graduation.</dd></div>
+    </dl>
+    <h2>Try it</h2>
+    <p>Finish setup in the app, then tap one of these or type your own.</p>
+    <div class="try" id="try"></div>
+    <p class="fine">Prototype. Your details stay in this browser. Runway gives information, not financial advice.</p>
+  </aside>
+  <div class="app" id="app">
+    <div id="view"></div>
+    <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  </div>
+</div>
+
+<script>
+const MARK='data:image/png;base64,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';
+const KEY='runway-v1';
+const DAY=864e5;
+const CHIPS=['Can I spend £30 on a night out?','Spent £12 on food','I bought a £900 laptop with Klarna pay in 3','I’ve started a part-time job earning £50 a week','Spent £1,500 on a laptop and course equipment','Should I buy Tesla shares?'];
+const LALA='I’ve got £5,400 available now. My next maintenance payment is £3,200 on 8 January. Rent is £650 a month, food is £55 a week and I spend around £30 a month on gym.';
+const PARTNERS={NATWEST:'NatWest',NATIONWIDE:'Nationwide',UCL:'UCL',HSBC:'HSBC',SANTANDER:'Santander',LLOYDS:'Lloyds'};
+const EXTRA_CATS=['Going out','Food','Course & tech','Transport','Clothes','Subscriptions','Other'];
+
+const ICON={
+  home:'<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg>',
+  debts:'<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2.5"/><path d="M3 10h18M7 15h4"/></svg>',
+  me:'<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c1.6-4 4.6-6 8-6s6.4 2 8 6"/></svg>',
+  mic:'<svg viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg>',
+  send:'<svg viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>',
+  x:'<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg>'
+};
+
+/* ---------- helpers ---------- */
+const today0=()=>{const d=new Date();d.setHours(0,0,0,0);return d};
+const iso=d=>{const x=new Date(d);return x.getFullYear()+'-'+String(x.getMonth()+1).padStart(2,'0')+'-'+String(x.getDate()).padStart(2,'0')};
+const parseIso=s=>{const [y,m,d]=String(s).split('-').map(Number);return new Date(y,(m||1)-1,d||1)};
+const addDays=(d,n)=>{const x=new Date(d);x.setDate(x.getDate()+n);return x};
+const fmtDate=d=>new Date(d).toLocaleDateString('en-GB',{day:'numeric',month:'short'});
+const round2=n=>Math.round(n*100)/100;
+const uid=()=>Math.random().toString(36).slice(2,9);
+const cap=s=>s?s.charAt(0).toUpperCase()+s.slice(1):s;
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+function gbp(n,pence){const neg=n<-0.004;n=Math.abs(n||0);const dp=pence||(n<100&&Math.abs(n-Math.round(n))>0.004);const s=dp?n.toLocaleString('en-GB',{minimumFractionDigits:2,maximumFractionDigits:2}):Math.round(n).toLocaleString('en-GB');return (neg?'−':'')+'£'+s}
+const num=v=>{const n=parseFloat(String(v).replace(/[£,\s]/g,''));return isFinite(n)?n:NaN};
+
+/* ---------- state ---------- */
+const fresh=()=>({session:false,step:'signup',tab:'home',partner:null,consent:{ai:false,data:false},chat:[],draft:null,profile:null,entries:[],debts:[],baseline:0,studentLoan:{borrowed:16540,salary:30000},notify:true,tipBnpl:false,tipSeen:false,account:null});
+function load(){try{const r=localStorage.getItem(KEY);return r?JSON.parse(r):null}catch(e){return null}}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
+let S=Object.assign(fresh(),load()||{});
+if(S.step==='app'&&!S.profile)S.step='onboard';
+const UI={route:'landing',si:{},forgot:false,pw:'',showPw:false,errs:{},sheet:null,inviteOpen:false,openDebt:null,listening:false,rec:null,text:'',keepScroll:true};
+
+/* ---------- language parsing (stands in for the LLM in this prototype) ---------- */
+const CAT_WORDS=[['Rent',/\brent\b|landlord|halls/],['Going out',/night out|going out|\bclub|\bpub\b|drinks|\bbar\b|party|cinema|\bgig|out tonight|friends/],['Food',/food|grocer|tesco|aldi|lidl|sainsbury|asda|lunch|dinner|breakfast|meal|coffee|takeaway|snack/],['Gym',/\bgym\b/],['Bills',/phone|bill|utilit|electric|wifi|internet/],['Transport',/uber|train|\bbus\b|taxi|travel|transport|petrol|railcard/],['Course & tech',/laptop|book|course|equipment|stationery|printer|calculator|tablet|ipad/],['Subscriptions',/netflix|spotify|subscription|prime|disney/],['Clothes',/coat|clothes|jacket|shoes|trainers|hoodie|jeans/]];
+function catOf(t){t=String(t).toLowerCase();for(const [c,r] of CAT_WORDS)if(r.test(t))return c;return 'Other'}
+function amounts(t){const out=[];const re=/£\s?(\d[\d,]*(?:\.\d{1,2})?)(k\b)?|(\d[\d,]*(?:\.\d{1,2})?)\s?(?:pounds|quid)\b/gi;let m;while((m=re.exec(t))){let v=parseFloat((m[1]||m[3]).replace(/,/g,''));if(m[2])v*=1000;out.push({v,i:m.index,end:re.lastIndex})}
+  const tn=t.search(/\ba tenner\b/i);if(tn>=0)out.push({v:10,i:tn,end:tn+8});const fv=t.search(/\ba fiver\b/i);if(fv>=0)out.push({v:5,i:fv,end:fv+7});return out.sort((a,b)=>a.i-b.i)}
+function freqAfter(t,end){const s=t.slice(end,end+30).toLowerCase();if(/^\s*(a|per|each|every|\/)\s*(week|wk)|^\s*weekly/.test(s))return 'week';if(/^\s*(a|per|each|every|\/)\s*(month|mo\b)|^\s*monthly/.test(s))return 'month';if(/^\s*(a|per|each|every)\s*term|^\s*termly/.test(s))return 'term';return null}
+const MONTHS=['jan','feb','mar','apr','may','jun','jul','aug','sep','oct','nov','dec'];
+function parseDate(t){let d,mo;const m=t.match(/(\d{1,2})(?:st|nd|rd|th)?\s+(?:of\s+)?(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*/i);
+  if(m){d=+m[1];mo=MONTHS.indexOf(m[2].toLowerCase())}else{const m2=t.match(/\b(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*\s+(\d{1,2})\b/i);if(!m2)return null;mo=MONTHS.indexOf(m2[1].toLowerCase());d=+m2[2]}
+  const t0=today0();let dt=new Date(t0.getFullYear(),mo,d);if(dt<=t0)dt=new Date(t0.getFullYear()+1,mo,d);return iso(dt)}
+function parseSetup(text){const lo=text.toLowerCase();const am=amounts(text);const r={balance:null,nextAmount:null,nextDate:parseDate(text),costs:[]};const used=new Set();
+  const kw=/(rent|food|groceries|gym|phone(?: bill)?|bills?|utilities|transport|travel|netflix|spotify|subscriptions?|going out|nights? out|bus pass|insurance)/g;
+  am.forEach((a,k)=>{const f=freqAfter(text,a.end);if(!f)return;const before=lo.slice(Math.max(0,a.i-32),a.i);const after=lo.slice(a.end,a.end+40);let label=null;
+    const bm=[...before.matchAll(kw)];if(bm.length)label=bm[bm.length-1][1];else{const m2=after.match(/\b(?:on|for)\s+(?:the\s+|my\s+)?([a-z][a-z ]{1,18}?)(?:[,.]|$|\s+and\b)/);if(m2)label=m2[1].trim()}
+    if(!label)return;used.add(k);const c=catOf(label);r.costs.push({name:cap(label),cat:c==='Other'?cap(label):c,amount:a.v,freq:f})});
+  am.forEach((a,k)=>{if(used.has(k)||r.nextAmount!=null)return;const ctx=lo.slice(Math.max(0,a.i-50),a.end+4);if(/next|maintenance|instal|payment|lands|loan/.test(ctx)&&/\bon\b|\d{1,2}(st|nd|rd|th)?\s+[a-z]{3}|[a-z]{3}\s+\d/.test(lo.slice(a.end,a.end+30))){r.nextAmount=a.v;used.add(k)}});
+  am.forEach((a,k)=>{if(used.has(k)||r.balance!=null)return;r.balance=a.v;used.add(k)});
+  return r}
+function intent(t){const lo=t.toLowerCase();
+  if(/invest|shares|stocks?\b|crypto|bitcoin|pension|mortgage|\bisa\b|trading/.test(lo))return 'resource';
+  if(/klarna|clearpay|paypal (?:pay|credit)|laybuy|bnpl|buy now pay later|pay in (?:3|three|4|four)|overdraft|took (?:out )?a loan|loan from|borrowed|credit card/.test(lo))return 'debt';
+  if(/can i|could i|afford|should i|is it ok|ok to spend|enough for/.test(lo))return 'afford';
+  if(/earn|job|got paid|income|wage|salary|bursary|paid me|refund|birthday money/.test(lo))return 'income';
+  if(/spent|spend|bought|buy|paid|cost|£|\d/.test(lo))return 'spend';
+  return 'resource'}
+function guessCat(q,def){const c=catOf(q);return c==='Other'?def:c}
+function debtGuess(q,amt){const lo=q.toLowerCase();let type='loan',provider='Loan';
+  if(/klarna/.test(lo)){type='pay3';provider='Klarna'}else if(/paypal/.test(lo)){type='pay3';provider='PayPal'}else if(/clearpay/.test(lo)){type='pay4';provider='Clearpay'}else if(/laybuy/.test(lo)){type='pay4';provider='Laybuy'}else if(/overdraft/.test(lo)){type='overdraft';provider='Overdraft'}else if(/pay in (3|three)/.test(lo)){type='pay3';provider='Pay in 3'}else if(/pay in (4|four)/.test(lo)){type='pay4';provider='Pay in 4'}
+  if(/pay in (4|four)/.test(lo))type='pay4';if(/pay in (3|three)/.test(lo)&&type!=='overdraft')type='pay3';
+  const m=lo.match(/(laptop|phone|tablet|ipad|coat|trainers|headphones|textbooks?|books?|desk|bike|tv|console|jacket|camera)/);
+  return {provider,type,amount:amt,label:m?cap(m[1]):'',start:iso(today0()),apr:type==='overdraft'?39.9:(type==='loan'?19.9:''),months:12,free:type==='overdraft'?500:''}}
+
+/* ---------- budget engine (deterministic: every number comes from here) ---------- */
+function weekly(c){const a=num(c.amount)||0;return c.freq==='week'?a:c.freq==='month'?a*12/52:c.freq==='term'?a/13:a/52}
+function buildDebt(d){const amt=num(d.amount)||0;const start=parseIso(d.start||iso(today0()));const ins=[];
+  if(d.type==='pay3'){for(let i=0;i<3;i++)ins.push({due:iso(addDays(start,30*i)),amount:round2(amt/3)})}
+  else if(d.type==='pay4'){for(let i=0;i<4;i++)ins.push({due:iso(addDays(start,14*i)),amount:round2(amt/4)})}
+  else if(d.type==='loan'){const n=Math.max(1,Math.round(num(d.months)||12)),r=(num(d.apr)||0)/100/12;const pay=r?amt*r/(1-Math.pow(1+r,-n)):amt/n;for(let i=1;i<=n;i++)ins.push({due:iso(addDays(start,30*i)),amount:round2(pay)})}
+  if(ins.length){const diff=round2(ins.length&&d.type!=='loan'?amt-ins.reduce((a,b)=>a+b.amount,0):0);ins[ins.length-1].amount=round2(ins[ins.length-1].amount+diff)}
+  const total=ins.reduce((a,b)=>a+b.amount,0);
+  return {id:uid(),provider:d.provider||'Debt',type:d.type,label:d.label||'',principal:amt,apr:num(d.apr)||0,free:num(d.free)||0,start:d.start,instalments:ins.map(x=>({...x,paid:false})),total:round2(total),interest:round2(Math.max(0,total-amt))}}
+function compute(extraEntries=[],extraDebts=[]){
+  const P=S.profile;const t0=today0();const start=parseIso(P.periodStart);const next=parseIso(P.nextDate);
+  const totalWeeks=Math.max(1,(next-start)/(7*DAY));const wl=Math.max(1,(next-t0)/(7*DAY));
+  const weekIdx=Math.min(Math.ceil(totalWeeks)-1,Math.max(0,Math.floor((t0-start)/(7*DAY))));
+  const weekStart=addDays(start,weekIdx*7);
+  const entries=S.entries.concat(extraEntries);const debts=S.debts.concat(extraDebts);
+  const committed=new Set(P.costs.map(c=>c.cat));
+  let spends=0,incomes=0,freeWeek=0,futureIncome=0;const spentPeriod={},spentWeek={};
+  for(const e of entries){const d=parseIso(e.date);
+    if(e.kind==='income'){if(e.freq==='once')incomes+=e.amount;else{const w=e.freq==='week'?e.amount:e.amount*12/52;const from=Math.max(+t0,+d);futureIncome+=w*Math.max(0,(next-from)/(7*DAY))}continue}
+    spends+=e.amount;spentPeriod[e.cat]=(spentPeriod[e.cat]||0)+e.amount;
+    if(d>=weekStart){spentWeek[e.cat]=(spentWeek[e.cat]||0)+e.amount;if(!committed.has(e.cat)&&!(S.baseline>0&&e.amount>S.baseline))freeWeek+=e.amount}}
+  let debtOut=0;for(const db of debts)for(const ins of db.instalments){const d=parseIso(ins.due);if(d>=start&&d<=next)debtOut+=ins.amount}
+  const available=P.opening+incomes+futureIncome-spends-debtOut;
+  let reserved=0;for(const c of P.costs)reserved+=Math.max(0,weekly(c)*totalWeeks-(spentPeriod[c.cat]||0));
+  const free=available-reserved;
+  const allowance=(free+freeWeek)/wl;const left=allowance-freeWeek;
+  const nextWeek=(free-Math.max(left,0))/Math.max(1,wl-1);
+  const need=P.costs.reduce((a,c)=>a+weekly(c),0);
+  const coveredWeeks=free>=0?totalWeeks:(need>0?Math.max(0,(t0-start)/(7*DAY)+Math.max(0,available)/need):0);
+  let status='ok';if(free<0)status='over';else if(left<0||nextWeek<S.baseline*0.8)status='tight';
+  return {totalWeeks,wl,weekIdx,weekStart,available,free,allowance,left,nextWeek,status,spentWeek,freeWeek,coveredWeeks,need,next,start,debtOut,due:t0>=next}}
+
+/* ---------- small views ---------- */
+const brand=()=>`<button class="brand brand-btn" data-action="site" aria-label="Runway website"><img src="${MARK}" alt="" width="28" height="28"><span>Runway</span></button>`;
+function statusPill(r){const t={ok:'On track',tight:'Tight',over:'Runs short'}[r.status];return `<span class="pill ${r.status}">${t}</span>`}
+function composer(mode){const chips=mode==='app'?`<div class="chips">${CHIPS.map(c=>`<button type="button" class="chip" data-action="chip" data-text="${esc(c)}">${esc(c)}</button>`).join('')}</div>`:'';
+  return `<form class="composer" data-form="${mode}" autocomplete="off">${chips}<div class="row"><button type="button" class="icon-btn ${UI.listening?'rec':''}" data-action="mic" aria-label="${UI.listening?'Stop listening':'Speak to Runway'}">${ICON.mic}</button><label class="sr" for="ask">Message Runway</label><input id="ask" class="ask" name="q" placeholder="${mode==='app'?'Log a spend or ask before you buy':'Type here or tap the mic'}" value="${esc(UI.text)}"><button class="icon-btn send" aria-label="Send">${ICON.send}</button></div></form>`}
+function nav(){const it=[['home','Home'],['debts','Debts'],['me','You']];return `<nav class="nav" aria-label="Main">${it.map(([k,l])=>`<button data-action="tab" data-tab="${k}" ${S.tab===k?'aria-current="page"':''}>${ICON[k]}<span>${l}</span></button>`).join('')}</nav>`}
+function stripView(r,n){n=n||Math.ceil(r.totalWeeks);let cells='';for(let i=0;i<n;i++){let cls='lit';if(i<r.weekIdx)cls='past';if(i===r.weekIdx)cls='now';if(i>r.weekIdx&&r.status==='over'&&i>=Math.floor(r.coveredWeeks))cls='gone';cells+=`<span class="week ${cls}"></span>`}
+  const msg=r.status==='over'?`Runs out in week ${Math.floor(r.coveredWeeks)+1}`:`Lasts until ${fmtDate(r.next)}`;
+  return `<div class="runway" role="img" aria-label="Week ${r.weekIdx+1} of ${n}. ${msg}."><div class="strip-top" aria-hidden="true"><strong>Week ${r.weekIdx+1} of ${n}</strong><span>${msg}</span></div><div class="lights" aria-hidden="true">${cells}</div><div class="strip-meta" aria-hidden="true"><span>${fmtDate(r.start)}</span><span>Next loan ${gbp(S.profile.nextAmount)} on ${fmtDate(r.next)}</span></div></div>`}
+function field(label,key,val,kind,opts){const id='sf-'+key;
+  if(kind==='money')return `<div class="fr"><label class="lbl" for="${id}">${label}</label><div class="money-wrap"><span>£</span><input id="${id}" class="inp" inputmode="decimal" data-sf="${key}" value="${esc(val)}" placeholder="0"></div></div>`;
+  if(kind==='select')return `<div class="fr"><label class="lbl" for="${id}">${label}</label><select id="${id}" class="inp" data-sf="${key}">${opts.map(o=>{const [v,l]=Array.isArray(o)?o:[o,o];return `<option value="${esc(v)}" ${String(v)===String(val)?'selected':''}>${esc(l)}</option>`}).join('')}</select></div>`;
+  if(kind==='date')return `<div class="fr"><label class="lbl" for="${id}">${label}</label><input id="${id}" type="date" class="inp" data-sf="${key}" value="${esc(val)}"></div>`;
+  return `<div class="fr"><label class="lbl" for="${id}">${label}</label><input id="${id}" class="inp" ${kind==='num'?'inputmode="decimal"':''} data-sf="${key}" value="${esc(val)}"></div>`}
+
+/* ---------- screens ---------- */
+function vWelcome(){const demo={weekIdx:0,status:'ok',next:addDays(today0(),78),start:today0(),totalWeeks:12,coveredWeeks:12};
+  let cells='';for(let i=0;i<12;i++)cells+=`<span class="week ${i===0?'now':'lit'}" style="--i:${i}"></span>`;
+  return `<div class="welcome">
+  <div class="w-brand"><img src="${MARK}" alt="" width="40" height="40"><span>Runway</span></div>
+  <h1 class="w-title">Make your loan last until the next one lands.</h1>
+  <p class="w-sub">Tell Runway what you’ve got and what you pay. It gives you one number to spend each week, and shows you what a purchase does before you make it.</p>
+  <div class="runway demo" aria-hidden="true"><div class="strip-top"><strong>This week</strong><span>Next loan</span></div><div class="lights">${cells}</div><div class="strip-meta"><span>Today</span><span>12 weeks of runway</span></div></div>
+  <div class="w-actions">
+    <button class="btn btn-primary btn-block" data-action="start">Get started</button>
+    ${S.partner?`<p class="note">Free through ${esc(S.partner)}.</p>`:UI.inviteOpen?`<div class="invite"><label class="lbl" for="invite">Invite code from your bank or university</label><div class="row"><input id="invite" class="inp" placeholder="For example NATWEST"><button class="btn btn-ghost" data-action="invite">Apply</button></div></div>`:`<button class="link" data-action="invite-open">I have an invite from my bank or university</button>`}
+  </div></div>`}
+const UNIS=['University College London (UCL)','King’s College London','Imperial College London','London School of Economics (LSE)','Queen Mary University of London','University of Manchester','University of Leeds','University of Birmingham','University of Bristol','University of Nottingham','University of Sheffield','University of Warwick','University of Liverpool','Newcastle University','Durham University','University of Exeter','University of Southampton','University of York','Lancaster University','Loughborough University','University of the West of England (UWE)','University of Oxford','University of Cambridge','University of Edinburgh','University of Glasgow','Queen’s University Belfast','Cardiff University','Swansea University','Aberystwyth University','Bangor University','University of Wales Trinity Saint David'];
+const UNI_PARTNERS={'University College London (UCL)':'UCL'};
+function accField(label,key,val,type,ac,extra){const e=UI.errs[key];const id='acc-'+key;
+  return `<div class="fr"><label class="lbl" for="${id}">${label}</label><input id="${id}" class="inp" type="${type}" data-acc="${key}" value="${esc(val||'')}" autocomplete="${ac}" ${extra||''} ${e?`aria-invalid="true" aria-describedby="${id}-err"`:''}>${e?`<p class="err" id="${id}-err">${e}</p>`:''}</div>`}
+function uniHint(a){if(a&&UNI_PARTNERS[a.uni])return `<p class="hint good" id="uni-hint">${esc(UNI_PARTNERS[a.uni])} gives its students Runway for free.</p>`;return `<p class="hint" id="uni-hint">Pick from the list or type it in full.</p>`}
+function emailHint(a){if(a&&/\.ac\.uk$/i.test(String(a.email||'').trim()))return `<p class="hint good" id="email-hint">University email recognised.</p>`;return `<p class="hint" id="email-hint">Your university email works best, but any email is fine.</p>`}
+function vSignup(){const a=S.account||{};const e=UI.errs;
+  return `<div class="top">${brand()}<span class="top-note">Step 1 of 4</span></div><div class="pad">
+  <button class="back" data-action="site">‹ Back to site</button>
+  <h1 class="h1">Create your account</h1>
+  <p class="lead">Tell us where you study. Some universities and banks give their students Runway for free.</p>
+  ${accField('Full name','name',a.name,'text','name')}
+  <div class="fr"><label class="lbl" for="acc-uni">University</label><input id="acc-uni" class="inp" type="text" list="unis" data-acc="uni" value="${esc(a.uni||'')}" autocomplete="organization" placeholder="Start typing your university" ${e.uni?'aria-invalid="true" aria-describedby="acc-uni-err"':''}><datalist id="unis">${UNIS.map(u=>`<option value="${esc(u)}"></option>`).join('')}</datalist>${e.uni?`<p class="err" id="acc-uni-err">${e.uni}</p>`:uniHint(a)}</div>
+  <div class="fr"><label class="lbl" for="acc-year">Year of study</label><select id="acc-year" class="inp" data-acc="year">${['1st year','2nd year','3rd year','4th year or above','Postgraduate','Apprenticeship'].map(y=>`<option ${a.year===y?'selected':''}>${y}</option>`).join('')}</select></div>
+  <div class="fr"><label class="lbl" for="acc-email">Email</label><input id="acc-email" class="inp" type="email" inputmode="email" data-acc="email" value="${esc(a.email||'')}" autocomplete="email" placeholder="you@university.ac.uk" ${e.email?'aria-invalid="true" aria-describedby="acc-email-err"':''}>${e.email?`<p class="err" id="acc-email-err">${e.email}</p>`:emailHint(a)}</div>
+  <div class="fr"><label class="lbl" for="acc-password">Password</label><div class="pw-wrap"><input id="acc-password" class="inp" type="${UI.showPw?'text':'password'}" data-acc="password" value="${esc(UI.pw)}" autocomplete="new-password" aria-describedby="${e.password?'acc-password-err':'pw-hint'}" ${e.password?'aria-invalid="true"':''}><button type="button" class="pw-toggle" data-action="pw-toggle" aria-label="${UI.showPw?'Hide password':'Show password'}">${UI.showPw?'Hide':'Show'}</button></div>${e.password?`<p class="err" id="acc-password-err">${e.password}</p>`:`<p class="hint" id="pw-hint">At least 8 characters, including a number.</p>`}</div>
+  <div class="fr"><label class="lbl" for="acc-invite">Invite code, if you have one</label><input id="acc-invite" class="inp" type="text" data-acc="invite" value="${esc(a.invite||'')}" autocomplete="off" placeholder="For example NATWEST" ${e.invite?'aria-invalid="true" aria-describedby="acc-invite-err"':''}>${e.invite?`<p class="err" id="acc-invite-err">${e.invite}</p>`:''}</div>
+  ${S.account&&S.account.pw&&!S.session?`<p class="forgot">There’s already a Runway account on this device. Creating a new one replaces it. <button class="link inline" data-action="signin-go">Sign in instead</button></p>`:''}
+  <button class="btn btn-primary btn-block" data-action="signup" style="margin-top:8px">Create account</button>
+  <p class="signup-note">Already have an account? <button class="link inline" data-action="signin-go">Sign in</button></p>
+  <p class="signup-note">We’ll send a link to confirm your email. We never sell your data.</p></div>`}
+async function hashPw(pw){try{const b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode('runway:'+pw));return [...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,'0')).join('')}catch(e){let x=7;for(const c of 'runway:'+pw)x=(x*31+c.charCodeAt(0))|0;return 'h'+x}}
+function vSignin(){const e=UI.errs,si=UI.si;
+  return `<div class="top">${brand()}<span class="top-note">Sign in</span></div><div class="pad">
+  <button class="back" data-action="site">‹ Back to site</button>
+  <h1 class="h1">Welcome back</h1><p class="lead">Sign in to see this week’s number.</p>
+  <div class="fr"><label class="lbl" for="si-email">Email</label><input id="si-email" class="inp" type="email" inputmode="email" autocomplete="email" data-si="email" value="${esc(si.email||'')}" ${e.email?'aria-invalid="true" aria-describedby="si-email-err"':''}>${e.email?`<p class="err" id="si-email-err">${e.email}</p>`:''}</div>
+  <div class="fr"><label class="lbl" for="si-password">Password</label><div class="pw-wrap"><input id="si-password" class="inp" type="${UI.showPw?'text':'password'}" autocomplete="current-password" data-si="password" value="${esc(si.password||'')}" ${e.password?'aria-invalid="true" aria-describedby="si-password-err"':''}><button type="button" class="pw-toggle" data-action="pw-toggle-si" aria-label="${UI.showPw?'Hide password':'Show password'}">${UI.showPw?'Hide':'Show'}</button></div>${e.password?`<p class="err" id="si-password-err">${e.password}</p>`:''}</div>
+  <button class="btn btn-primary btn-block" data-action="signin">Sign in</button>
+  <p class="signup-note"><button class="link inline" data-action="forgot" aria-expanded="${UI.forgot}">Forgot your password?</button></p>
+  ${UI.forgot?`<p class="forgot">This prototype keeps your account in this browser, so it can’t email you a reset link yet. To start again, <button class="link inline" data-action="signup-go">create a new account</button>. It replaces the one on this device.</p>`:''}
+  <p class="signup-note">New to Runway? <button class="link inline" data-action="signup-go">Create an account</button></p></div>`}
+function vLanding(){const signed=S.session;const first=S.account&&S.account.name?String(S.account.name).split(' ')[0]:'';
+  let cells='';for(let i=0;i<12;i++)cells+=`<span class="week ${i===0?'now':'lit'}" style="--i:${i}"></span>`;
+  const nav=[['how','How it works'],['features','Features'],['partners','For universities'],['pricing','Pricing'],['faq','Questions']];
+  const cta=signed?`<button class="btn btn-primary btn-sm" data-action="open-app">Open Runway</button>`:`<button class="btn btn-ghost btn-sm" data-action="signin-go">Sign in</button><button class="btn btn-primary btn-sm" data-action="signup-go">Get started</button>`;
+  return `<header class="site-head"><div class="wrap"><button class="brand brand-btn" data-action="site" aria-label="Runway home"><img src="${MARK}" alt="" width="30" height="30"><span>Runway</span></button>
+  <nav class="site-nav" aria-label="Sections">${nav.map(([id,l])=>`<button data-action="scroll-to" data-to="${id}">${l}</button>`).join('')}</nav><div class="head-cta">${cta}</div></div></header>
+  <main>
+  <section class="s-hero"><div class="wrap">
+    <h1>Make your loan last until the next one lands.</h1>
+    <p class="lede">Runway turns your student loan into one number to spend each week. Ask before you buy, and see every debt in one place. Built for students in the UK.</p>
+    <div class="cta-row">${signed?`<button class="btn btn-primary" data-action="open-app">${first?`Open Runway, ${esc(first)}`:'Open Runway'}</button>`:`<button class="btn btn-primary" data-action="signup-go">Get started free</button><button class="btn btn-ghost" data-action="signin-go">Sign in</button>`}</div>
+    <p class="cta-note">Free for your first year, and free for good if your university or bank partners with Runway.</p>
+    <div class="big-runway runway demo" role="img" aria-label="Example: Lala can spend £273 a week, on track until her next loan on 8 January.">
+      <div class="br-top" aria-hidden="true"><div><p class="br-who">Lala, second year, can spend</p><p class="br-fig">£273<small>this week</small></p></div><span class="pill ok">On track</span></div>
+      <div class="lights" aria-hidden="true">${cells}</div>
+      <div class="strip-meta" aria-hidden="true"><span>Today: £5,400 in the bank</span><span>8 Jan: £3,200 lands</span></div>
+    </div>
+  </div></section>
+
+  <section class="s-sec" id="why"><div class="wrap">
+    <h2>Student loans arrive in lumps. Life costs money every week.</h2>
+    <p class="intro">Most budgeting apps assume a monthly salary. Students get a few payments a year, often while living away from home for the first time, and are expected to make each one last.</p>
+    <div class="stats"><div class="stat"><strong>61%</strong><span>of students skip meals to save money</span></div><div class="stat"><strong>45%</strong><span>feel confident managing their money</span></div><div class="stat"><strong>1 in 4</strong><span>took on new debt to cover rising costs</span></div></div>
+    <p class="source">Sources: Save the Student National Student Money Survey 2025, and Runway research.</p>
+  </div></section>
+
+  <section class="s-sec" id="how"><div class="wrap">
+    <h2>How it works</h2>
+    <p class="intro">Setup takes about two minutes, and there are no forms or spreadsheets.</p>
+    <ol class="steps">
+      <li><h3>Tell Runway what you’ve got</h3><p>Type or say your balance, when your next loan lands and what you pay each week or month.</p></li>
+      <li><h3>Get your weekly number</h3><p>Runway sets aside rent and bills, then spreads the rest across the weeks until your next payment.</p></li>
+      <li><h3>Check before you spend</h3><p>Ask “can I spend £30 tonight?” and see what it does to this week and next. Then you decide.</p></li>
+    </ol>
+  </div></section>
+
+  <section class="s-sec" id="features"><div class="wrap">
+    <h2>What Runway does</h2>
+    <div class="feat"><div><h3>Ask before you spend</h3><p>See what a purchase does to this week and next before you make it. Runway never says yes or no. It shows you the trade-off and hands the decision back.</p></div>
+      <div class="screen" aria-hidden="true"><p class="heard" style="margin-bottom:12px">You said “Can I spend £30 on a night out?”</p><div class="impact"><div class="imp-row"><span>Left this week</span><span><span class="was">£273</span> → <strong>£243</strong></span></div><div class="imp-row"><span>Next week</span><span><span class="was">£273</span> → <strong>£273</strong></span></div><div class="imp-row"><span>Status after</span><span class="pill ok">On track</span></div></div><p class="handoff">This is information to help you decide. The decision is yours.</p><div class="demo-btns"><span>Skip it</span><span>I’m going ahead</span></div></div></div>
+    <div class="feat"><div><h3>Every debt in one place</h3><p>Klarna, overdrafts, loans and your student loan, side by side. Before you add a new one, Runway shows the payment dates, the total cost and what it does to your weekly number.</p></div>
+      <div class="screen" aria-hidden="true"><div class="debt" style="padding-top:0"><div class="debt-head" style="padding-top:0"><span><span class="debt-name">Klarna <span class="muted" style="font-weight:400">for laptop</span></span><span class="debt-sub">Next £300 on 21 Nov</span></span><span class="debt-amt">£600</span></div><span class="bar"><i style="width:33%"></i></span></div><div class="debt"><div class="debt-head"><span><span class="debt-name">Overdraft</span><span class="debt-sub">Interest-free up to £500</span></span><span class="debt-amt">£250</span></div></div><p class="repay" style="margin-top:16px">Student loan: you’d repay <strong>£37.50</strong> a month</p><p class="small muted" style="margin:0">If you later earn £30,000 a year, on Plan 5.</p></div></div>
+    <div class="feat"><div><h3>Talk to it like a friend</h3><p>Say “spent £12 on food” and it’s logged. Logging takes seconds, so you actually keep doing it. Typing always works too, and you confirm everything before it’s saved.</p></div>
+      <div class="screen chat" aria-hidden="true" style="display:flex;flex-direction:column"><div class="msg me">Spent £12 on food</div><div class="msg bot">Logged £12 to Food. You have £261 left to spend this week.</div><div class="msg me">I’ve started a part-time job earning £50 a week</div><div class="msg bot">Added £50 a week. Next week goes up to £323.</div></div></div>
+  </div></section>
+
+  <section class="s-sec" id="partners"><div class="wrap">
+    <h2>For universities and banks</h2>
+    <p class="intro">Give every student a budgeting tool built for how student money actually works. Runway supports student welfare and helps banks meet Consumer Duty, for £2.50 per student per month.</p>
+    <ul class="s-list"><li><strong>Simple to roll out</strong><span>Students join with an invite code. No integration is needed to start.</span></li><li><strong>A perk students use</strong><span>Sits alongside the offers that already come with student bank accounts.</span></li><li><strong>Information, not advice</strong><span>Designed to inform and educate, keeping clear of regulated financial advice.</span></li></ul>
+  </div></section>
+
+  <section class="s-sec" id="pricing"><div class="wrap">
+    <h2>Pricing</h2>
+    <p class="intro">Students on a tight budget shouldn’t have to pay much to stay on top of it.</p>
+    <div class="plans"><div class="plan lead-plan"><h3>Through your university or bank</h3><p class="price">Free</p><p>If your university or bank partners with Runway, they cover it. Join with your invite code.</p></div>
+    <div class="plan"><h3>On your own</h3><p class="price">£7<small>a month</small></p><p>Free for your first year, for apprentices and students at any university.</p></div>
+    <div class="plan"><h3>For institutions</h3><p class="price">£2.50<small>per student a month</small></p><p>For universities and banks offering Runway to their students.</p></div></div>
+  </div></section>
+
+  <section class="s-sec" id="trust"><div class="wrap"><div class="trust">
+    <h2>Information, not advice</h2>
+    <p class="intro">Runway shows you the numbers and the trade-offs. It never tells you what to buy, borrow or invest in.</p>
+    <ul class="s-list"><li><strong>You decide</strong><span>Every answer ends by handing the decision back to you.</span></li><li><strong>Numbers you can check</strong><span>AI understands what you type. Every figure comes from Runway’s budget calculator, not the AI.</span></li><li><strong>Your data, your call</strong><span>Never sold. Copy it or delete it any time from your account.</span></li></ul>
+  </div></div></section>
+
+  <section class="s-sec" id="faq"><div class="wrap">
+    <h2>Questions</h2>
+    <div class="faq">
+      <details><summary>Is Runway financial advice?</summary><p>No. Runway gives you information about your own money so you can make your own decisions. If a question is about investing or borrowing, it points you to official sources such as MoneyHelper and the FCA Register.</p></details>
+      <details><summary>Does it connect to my bank?</summary><p>Not yet. You tell Runway what you spend by typing or talking, which takes a few seconds. Automatic bank sync is planned with partner banks.</p></details>
+      <details><summary>What happens to my data?</summary><p>Runway uses your details only to work out your weekly number. It never sells your data, and you can copy or delete it at any time from the You tab.</p></details>
+      <details><summary>What if my loan just doesn’t cover my costs?</summary><p>Runway shows you early, before the money runs out, and points you to your university’s hardship fund and free money advice.</p></details>
+      <details><summary>Why would I talk to a budgeting app?</summary><p>Because manual entry is what makes people give up on budgeting. Saying “spent £12 on food” is quicker than filling in a form. You can always type instead.</p></details>
+    </div>
+  </div></section>
+
+  <section class="s-sec final"><div class="wrap">
+    <h2>Your next loan lands soon. Make this one last.</h2>
+    <div class="cta-row">${signed?`<button class="btn btn-primary" data-action="open-app">Open Runway</button>`:`<button class="btn btn-primary" data-action="signup-go">Get started free</button><button class="btn btn-ghost" data-action="signin-go">Sign in</button>`}</div>
+  </div></section>
+  </main>
+  <footer class="site-foot"><div class="wrap"><span class="brand"><img src="${MARK}" alt="" width="24" height="24"><span>Runway</span></span><span>Built for students in the UK. Prototype: your account and budget stay in this browser.</span></div></footer>`}
+function vConsent(){const c=S.consent;return `<div class="top">${brand()}<span class="top-note">Step 2 of 4</span></div><div class="pad">
+  <button class="back" data-action="go" data-to="signup">‹ Back</button>
+  <h1 class="h1">Before we start</h1>
+  <p class="lead">Runway uses AI to understand what you type or say. It shows you information about your money so you can decide. It doesn’t give financial advice, and it never decides for you.</p>
+  <label class="check"><input type="checkbox" data-consent="ai" ${c.ai?'checked':''}><span>I understand Runway uses AI and gives information, not financial advice.</span></label>
+  <label class="check"><input type="checkbox" data-consent="data" ${c.data?'checked':''}><span>I agree to Runway storing my budget details to work out my weekly figure. I can delete them any time.</span></label>
+  <button class="btn btn-primary btn-block" data-action="consent" ${c.ai&&c.data?'':'disabled'}>Continue</button></div>`}
+function vOnboard(){const intro={who:'bot',text:'Tell me what you’ve got right now, when your next loan payment lands, and your regular costs like rent and food. Write it the way you’d text a friend.'};
+  const msgs=[intro].concat(S.chat);
+  return `<div class="col"><div class="top">${brand()}<span class="top-note">Step 3 of 4</span></div>
+  <div class="main chat" id="scroller">${msgs.map(m=>`<div class="msg ${m.who}">${esc(m.text)}</div>`).join('')}
+  ${S.chat.length===0?`<button class="example" data-action="example"><strong>Use Lala’s example</strong>“${esc(LALA)}”</button>`:''}</div>
+  ${composer('onboard')}</div>`}
+function vConfirm(){const d=S.draft;return `<div class="col"><div class="top">${brand()}<span class="top-note">Step 4 of 4</span></div><div class="main">
+  <button class="back" data-action="go" data-to="onboard">‹ Back to chat</button>
+  <h1 class="h1">Is this right?</h1><p class="lead">Nothing is saved until you confirm. Fix anything I got wrong.</p>
+  <div class="fr"><label class="lbl" for="d-balance">Available now</label><div class="money-wrap"><span>£</span><input id="d-balance" class="inp" inputmode="decimal" data-draft="balance" value="${esc(d.balance??'')}"></div></div>
+  <div class="two"><div class="fr"><label class="lbl" for="d-next">Next loan payment</label><div class="money-wrap"><span>£</span><input id="d-next" class="inp" inputmode="decimal" data-draft="nextAmount" value="${esc(d.nextAmount??'')}"></div></div>
+  <div class="fr"><label class="lbl" for="d-date">Lands on</label><input id="d-date" type="date" class="inp" data-draft="nextDate" value="${esc(d.nextDate||'')}"></div></div>
+  <h2 class="h2">Regular costs</h2>
+  ${d.costs.length?'':`<p class="empty">No regular costs yet. Add rent, food or anything you pay every week or month.</p>`}
+  ${d.costs.map((c,i)=>`<div class="cost-row"><input class="inp" aria-label="Cost name" data-cost="${i}" data-k="name" value="${esc(c.name)}" placeholder="Name"><div class="money-wrap"><span>£</span><input class="inp" inputmode="decimal" aria-label="${esc(c.name||'Cost')} amount" data-cost="${i}" data-k="amount" value="${esc(c.amount)}"></div><select class="inp" aria-label="How often" data-cost="${i}" data-k="freq">${['week','month','term'].map(f=>`<option value="${f}" ${c.freq===f?'selected':''}>a ${f}</option>`).join('')}</select><button class="icon-btn small" data-action="cost-del" data-i="${i}" aria-label="Remove ${esc(c.name||'cost')}">${ICON.x}</button></div>`).join('')}
+  <button class="link" data-action="cost-add">Add a cost</button>
+  </div><div class="footer-bar"><button class="btn btn-primary btn-block" data-action="setup-confirm">Looks right</button></div></div>`}
+function vHome(){const r=compute();const P=S.profile;
+  const reason=r.status==='ok'?`At this pace your money lasts until ${fmtDate(r.next)}.`:r.status==='tight'?`You’ve spent more than planned, so next week has less in it.`:`At this pace your money runs short before ${fmtDate(r.next)}.`;
+  const cats=P.costs.map(c=>{const plan=weekly(c),spent=r.spentWeek[c.cat]||0;return catRow(c.name,spent?`${gbp(spent)} of ${gbp(plan)}`:`${gbp(plan)} set aside`,plan?Math.min(100,spent/plan*100):0,spent>plan+0.01)});
+  const al=Math.max(0,r.allowance);
+  cats.unshift(catRow('Spending money',`${gbp(r.freeWeek)} of ${gbp(al)}`,al?Math.min(100,r.freeWeek/al*100):(r.freeWeek?100:0),r.freeWeek>al+0.01,true));
+  const list=S.entries.slice().sort((a,b)=>(b.date+b.t)>(a.date+a.t)?1:-1).slice(0,10);
+  return `<section class="hero"><p class="figure-label">Left to spend this week</p><p class="figure ${r.left<0?'neg':''}">${gbp(Math.round(r.left))}</p>
+  <div class="hero-meta">${statusPill(r)}<span>Next week: ${gbp(Math.round(r.nextWeek))}</span></div>
+  ${stripView(r)}<p class="reason">${reason}</p></section>
+  ${r.due?`<div class="banner"><p><strong>Has your ${gbp(P.nextAmount)} loan payment arrived?</strong> Confirm it to start your next period.</p><button class="btn btn-primary btn-block" data-action="rollover-open">Confirm payment</button></div>`:''}
+  ${r.status==='over'?`<div class="banner warn"><p><strong>Money looks short before ${fmtDate(r.next)}.</strong> Your university’s hardship fund and student money advice team can help, and asking is free.</p><div class="links"><a href="https://www.gov.uk/extra-money-pay-university" target="_blank" rel="noopener">Hardship funds on GOV.UK</a><a href="https://www.moneyhelper.org.uk" target="_blank" rel="noopener">Free guidance from MoneyHelper</a></div></div>`:''}
+  <h2 class="h2">This week</h2><div>${cats.join('')}</div>
+  <h2 class="h2">Recent</h2>
+  ${list.length?`<ul class="entries">${list.map(e=>`<li class="entry"><span><span class="entry-title">${esc(e.kind==='income'?'Income':e.cat)}</span><span class="entry-sub">${esc(fmtDate(parseIso(e.date)))}${e.note?', '+esc(e.note):''}</span></span><span class="entry-amt ${e.kind==='income'?'in':''}">${e.kind==='income'?'+':''}${gbp(e.amount)}${e.kind==='income'&&e.freq!=='once'?` a ${e.freq}`:''}</span><button class="icon-btn small" data-action="entry-del" data-id="${e.id}" aria-label="Delete this entry">${ICON.x}</button></li>`).join('')}</ul>`:`<p class="empty">Nothing logged yet. Tell Runway when you spend, like “spent £12 on food”.</p>`}`}
+function catRow(name,val,pct,over,main){return `<div class="cat ${main?'cat-main':''}"><span class="cat-name">${esc(name)}</span><span class="cat-val">${val}</span><span class="bar" aria-hidden="true"><i style="width:${pct}%" class="${over?'over':''}"></i></span></div>`}
+function vDebts(){const t0=today0();const owed=S.debts.reduce((a,d)=>a+(d.type==='overdraft'?d.principal:d.instalments.filter(i=>!i.paid).reduce((x,i)=>x+i.amount,0)),0);
+  const up=S.debts.flatMap(d=>d.instalments.filter(i=>!i.paid).map(i=>({d,i}))).sort((a,b)=>a.i.due<b.i.due?-1:1)[0];
+  return `<section class="hero small"><p class="figure-label">You owe, not counting your student loan</p><p class="figure">${gbp(owed)}</p>
+  <p class="hero-line">${up?`Next payment ${gbp(up.i.amount)} to ${esc(up.d.provider)} on ${fmtDate(parseIso(up.i.due))}`:'No payments coming up'}</p></section>
+  ${S.tipBnpl&&!S.tipSeen?`<div class="banner"><p><strong>Worth knowing:</strong> BNPL providers such as Klarna can report missed payments to credit reference agencies, which can affect your credit file. Runway will remind you 3 days before each payment.</p><button class="link" data-action="tip-ok">Got it</button></div>`:''}
+  <h2 class="h2">Short-term debts</h2>
+  ${S.debts.length?S.debts.map(debtCard).join(''):`<p class="empty">Nothing here yet. If you use Klarna, an overdraft or a loan, tell Runway and it’ll show you the real cost before you add it.</p>`}
+  <h2 class="h2">Student loan</h2>${studentLoan()}`}
+function debtCard(d){const open=UI.openDebt===d.id;const t0=today0();const unpaid=d.instalments.filter(i=>!i.paid);const nx=unpaid[0];
+  const remaining=d.type==='overdraft'?d.principal:unpaid.reduce((a,i)=>a+i.amount,0);
+  const late=nx&&parseIso(nx.due)<t0;const prog=d.instalments.length?(d.instalments.length-unpaid.length)/d.instalments.length*100:0;
+  const sub=d.type==='overdraft'?'Overdraft balance':nx?`Next ${gbp(nx.amount)} on ${fmtDate(parseIso(nx.due))}${late?', overdue':''}`:'Paid off';
+  let detail='';
+  if(open){if(d.type==='overdraft'){const over=Math.max(0,d.principal-d.free);const monthly=over*d.apr/100/12;
+      detail=`<div class="facts"><span>Balance</span><span>${gbp(d.principal)}</span><span>Interest-free up to</span><span>${gbp(d.free)}</span><span>Interest above that</span><span>${d.apr}% a year</span><span>Interest this month, about</span><span>${gbp(monthly,true)}</span></div>
+      <p class="small muted">Interest-free limits often shrink after graduation. Check the date with your bank.</p>`}
+    else{detail=`<ul class="sched">${d.instalments.map((i,k)=>`<li><span>${fmtDate(parseIso(i.due))}${!i.paid&&parseIso(i.due)<t0?' <span class="debt-sub late" style="display:inline">overdue</span>':''}</span><span style="font-variant-numeric:tabular-nums">${gbp(i.amount,true)}</span>${i.paid?'<span class="done">Paid</span>':`<button class="mini" data-action="inst-paid" data-id="${d.id}" data-k="${k}">Mark paid</button>`}</li>`).join('')}</ul>
+      <div class="facts"><span>Borrowed</span><span>${gbp(d.principal,true)}</span><span>Total you’ll pay</span><span>${gbp(d.total,true)}</span><span>Interest and fees</span><span>${gbp(d.interest,true)}</span></div>`}
+    detail+=`<button class="link" data-action="debt-del" data-id="${d.id}">Remove this debt</button>`}
+  return `<div class="debt"><button class="debt-head" data-action="debt-toggle" data-id="${d.id}" aria-expanded="${open}"><span><span class="debt-name">${esc(d.provider)}${d.label?` <span class="muted" style="font-weight:400">for ${esc(d.label.toLowerCase())}</span>`:''}</span><span class="debt-sub ${late?'late':''}">${sub}</span></span><span class="debt-amt">${gbp(remaining)}</span></button>
+  ${d.instalments.length?`<span class="bar" aria-hidden="true"><i style="width:${prog}%"></i></span>`:''}${detail}</div>`}
+function studentLoan(){const L=S.studentLoan;const m=Math.max(0,(L.salary-25000)*0.09/12);
+  return `<div class="sl"><div class="fr"><label class="lbl" for="sl-b">Borrowed so far, estimated</label><div class="money-wrap"><span>£</span><input id="sl-b" class="inp" inputmode="decimal" data-sl="borrowed" value="${esc(L.borrowed)}"></div></div>
+  <p class="small muted" style="margin-top:-6px">Check the exact figure in your Student Finance account.</p>
+  <div class="fr"><label class="lbl" for="sl-s">If you later earn <strong data-out="salary" style="color:var(--text)">${gbp(L.salary)}</strong> a year</label><input id="sl-s" type="range" min="20000" max="70000" step="1000" value="${L.salary}" data-sl="salary"></div>
+  <p class="repay">You’d repay <strong data-out="repay">${gbp(m,true)}</strong> a month</p>
+  <p class="small muted">Assumes Plan 5, for courses starting from August 2023: 9% of income above £25,000, and anything left is written off after 40 years. What you repay depends on what you earn, not on how much you owe. <a href="https://www.gov.uk/repaying-your-student-loan" target="_blank" rel="noopener">How repayment works on GOV.UK</a></p></div>`}
+function vMe(){const P=S.profile;return `<h1 class="h1">${S.account&&S.account.name?esc(S.account.name.split(' ')[0])+'’s setup':'Your setup'}</h1>
+  ${S.account?`<div class="kv"><span>University</span><span>${esc(S.account.uni)}, ${esc(S.account.year||'')}</span></div><div class="kv"><span>Email</span><span>${esc(S.account.email)}</span></div>`:''}
+  <div class="kv"><span>Available at the start of this period</span><span>${gbp(P.opening)}</span></div>
+  <div class="kv"><span>Next loan payment</span><span>${gbp(P.nextAmount)} on ${fmtDate(parseIso(P.nextDate))}</span></div>
+  ${P.costs.map(c=>`<div class="kv"><span>${esc(c.name)}</span><span>${gbp(num(c.amount))} a ${c.freq}</span></div>`).join('')}
+  ${S.partner?`<div class="kv"><span>Plan</span><span>Free through ${esc(S.partner)}</span></div>`:`<div class="kv"><span>Plan</span><span>Free trial, then £7 a month</span></div>`}
+  <div class="stack"><button class="btn btn-primary btn-block" data-action="rollover-open">My loan payment arrived</button><button class="btn btn-ghost btn-block" data-action="redo">Redo setup</button><button class="btn btn-ghost btn-block" data-action="signout">Sign out</button></div>
+  <h2 class="h2">Reminders</h2><label class="toggle"><input type="checkbox" data-notify ${S.notify?'checked':''}><span>Remind me 3 days before a debt payment is due</span></label>
+  <h2 class="h2">How Runway uses AI</h2><p class="small muted">AI reads what you type or say and turns it into amounts and categories, which you always confirm. Every figure is worked out by Runway’s budget calculator, not the AI. Runway gives information, not financial advice, and you make every decision.</p>
+  <h2 class="h2">Your data</h2><div class="stack" style="margin-top:8px"><button class="btn btn-ghost btn-block" data-action="copy-data">Copy my data</button><button class="btn btn-danger btn-block" data-action="delete-ask">Delete my data</button></div>`}
+function vApp(){const body=S.tab==='debts'?vDebts():S.tab==='me'?vMe():vHome();
+  return `<div class="col"><header class="top">${brand()}<span class="top-note">${S.partner?`Free through ${esc(S.partner)}`:`Next loan ${fmtDate(parseIso(S.profile.nextDate))}`}</span></header><main class="main" id="main">${body}</main>${S.tab!=='me'?composer('app'):''}${nav()}</div>`}
+
+/* ---------- sheets ---------- */
+function sheetLive(){const s=UI.sheet;const d=s.d;
+  if(s.type==='afford'){const amt=num(d.amount);if(!(amt>0))return `<p class="muted">Enter an amount to see what it does to your week.</p>`;
+    const b=compute(),a=compute([{kind:'spend',amount:amt,cat:d.cat,date:iso(today0())}]);
+    let sum;if(a.status==='over')sum=`Spending ${gbp(amt)} would mean your money runs short before ${fmtDate(a.next)} on your current plan.`;
+    else if(a.left<0)sum=`That’s ${gbp(-a.left)} more than you have left this week, so next week drops to ${gbp(a.nextWeek)}.`;
+    else sum=`You’d have ${gbp(a.left)} left this week, and next week stays at ${gbp(a.nextWeek)}.`;
+    return `<div class="impact"><div class="imp-row"><span>Left this week</span><span><span class="was">${gbp(b.left)}</span> → <strong>${gbp(a.left)}</strong></span></div><div class="imp-row"><span>Next week</span><span><span class="was">${gbp(b.nextWeek)}</span> → <strong>${gbp(a.nextWeek)}</strong></span></div><div class="imp-row"><span>Status after</span>${statusPill(a)}</div></div>
+    <p class="summary">${sum}</p><p class="handoff">This is information to help you decide. The decision is yours.</p>`}
+  if(s.type==='entry'){const amt=num(d.amount);if(!(amt>0))return `<p class="muted">How much was it? Enter the amount to save it.</p>`;
+    const e=d.kind==='income'?{kind:'income',amount:amt,freq:d.freq,date:iso(today0())}:{kind:'spend',amount:amt,cat:d.cat,date:iso(today0())};
+    const b=compute(),a=compute([e]);
+    return `<div class="impact"><div class="imp-row"><span>Left this week</span><span><span class="was">${gbp(b.left)}</span> → <strong>${gbp(a.left)}</strong></span></div><div class="imp-row"><span>Next week</span><span><span class="was">${gbp(b.nextWeek)}</span> → <strong>${gbp(a.nextWeek)}</strong></span></div><div class="imp-row"><span>Status after</span>${statusPill(a)}</div></div>${d.kind!=='income'&&amt>S.baseline?`<p class="handoff">This is more than a week’s spending money, so Runway spreads it across the weeks until ${fmtDate(a.next)}.</p>`:''}`}
+  if(s.type==='debt'){const amt=num(d.amount);if(!(amt>0))return `<p class="muted">How much was it? Enter the amount to see the repayment plan.</p>`;
+    const db=buildDebt(d);const b=compute(),a=compute([],[db]);const inPeriod=db.instalments.filter(i=>parseIso(i.due)<=parseIso(S.profile.nextDate)).reduce((x,i)=>x+i.amount,0);
+    let plan='';if(d.type==='overdraft'){const over=Math.max(0,amt-(num(d.free)||0));plan=`<div class="facts"><span>Above interest-free limit</span><span>${gbp(over)}</span><span>Interest on that, about</span><span>${gbp(over*(num(d.apr)||0)/100/12,true)} a month</span></div>`}
+    else plan=`<ul class="sched">${db.instalments.slice(0,6).map(i=>`<li><span>${fmtDate(parseIso(i.due))}</span><span style="font-variant-numeric:tabular-nums">${gbp(i.amount,true)}</span><span></span></li>`).join('')}${db.instalments.length>6?`<li><span class="muted">and ${db.instalments.length-6} more</span><span></span><span></span></li>`:''}</ul>
+      <div class="facts"><span>Total you’ll pay</span><span>${gbp(db.total,true)}</span><span>Interest and fees</span><span>${gbp(db.interest,true)}</span><span>Due before ${fmtDate(parseIso(S.profile.nextDate))}</span><span>${gbp(inPeriod,true)}</span></div>`;
+    return `${plan}<div class="impact"><div class="imp-row"><span>Next week’s spending money</span><span><span class="was">${gbp(b.nextWeek)}</span> → <strong>${gbp(a.nextWeek)}</strong></span></div><div class="imp-row"><span>Status after</span>${statusPill(a)}</div></div>
+    <p class="handoff">Runway sets aside each payment in the week it’s due. <a href="https://www.moneyhelper.org.uk" target="_blank" rel="noopener">MoneyHelper</a> explains how ${d.type==='overdraft'?'overdrafts':d.type==='loan'?'loans':'buy now pay later'} work. The decision is yours.</p>`}
+  if(s.type==='rollover'){const r=compute();const cash=r.available+0;const got=num(d.amount)||0;
+    return `<div class="impact"><div class="imp-row"><span>Carried over</span><strong>${gbp(cashNow())}</strong></div><div class="imp-row"><span>New starting amount</span><strong>${gbp(cashNow()+got)}</strong></div></div>`}
+  return ''}
+function cashNow(){const P=S.profile;let c=P.opening;for(const e of S.entries){if(e.kind==='income'){if(e.freq==='once')c+=e.amount}else c-=e.amount}
+  const start=parseIso(P.periodStart),t0=today0();for(const d of S.debts)for(const i of d.instalments){const dd=parseIso(i.due);if(dd>=start&&dd<=t0)c-=i.amount}return c}
+function sheetView(){const s=UI.sheet;if(!s)return '';const d=s.d;let title='',body='',actions='',one=false;
+  const heard=s.raw?`<p class="heard">You said “${esc(s.raw)}”</p>`:'';
+  const catOpts=[...new Set(S.profile?S.profile.costs.map(c=>c.cat).concat(EXTRA_CATS):EXTRA_CATS)];
+  if(s.type==='afford'){title='Before you spend';body=`<div class="two">${field('Amount','amount',d.amount,'money')}${field('Comes from','cat',d.cat,'select',catOpts)}</div><div id="live">${sheetLive()}</div>`;
+    actions=`<button class="btn btn-ghost" data-action="afford-skip">Skip it</button><button class="btn btn-primary" data-action="afford-go">I’m going ahead</button>`}
+  else if(s.type==='entry'){const inc=d.kind==='income';title=inc?'Add this income':'Log this spend';
+    body=`<div class="two">${field('Amount','amount',d.amount,'money')}${inc?field('How often','freq',d.freq,'select',[['once','Just once'],['week','Every week'],['month','Every month']]):field('Category','cat',d.cat,'select',catOpts)}</div><div id="live">${sheetLive()}</div>`;
+    actions=`<button class="btn btn-ghost" data-action="sheet-close">Cancel</button><button class="btn btn-primary" data-action="entry-save">${inc?'Add income':'Log spend'}</button>`}
+  else if(s.type==='debt'){title='Before you add this debt';
+    const extra=d.type==='loan'?`<div class="two">${field('Interest (APR %)','apr',d.apr,'num')}${field('Months to repay','months',d.months,'num')}</div>`:d.type==='overdraft'?`<div class="two">${field('Interest-free up to','free',d.free,'money')}${field('Interest above that (APR %)','apr',d.apr,'num')}</div>`:'';
+    body=`<div class="two">${field('Provider','provider',d.provider,'text')}${field('Type','type',d.type,'select',[['pay3','Pay in 3, monthly'],['pay4','Pay in 4, every 2 weeks'],['overdraft','Overdraft'],['loan','Loan, monthly']])}</div>
+    <div class="two">${field(d.type==='overdraft'?'Overdrawn by':'Amount','amount',d.amount,'money')}${field('First payment','start',d.start,'date')}</div>${extra}<div id="live">${sheetLive()}</div>`;
+    actions=`<button class="btn btn-ghost" data-action="sheet-close">Cancel</button><button class="btn btn-primary" data-action="debt-save">Add to my tracker</button>`}
+  else if(s.type==='resource'){title='That’s outside what Runway covers';one=true;
+    body=`<p class="summary">Runway helps with budgeting and keeping track of debt. It can’t tell you whether to invest, borrow or buy a financial product. These official sources explain your options:</p>
+    <ul class="res"><li><a href="https://www.moneyhelper.org.uk" target="_blank" rel="noopener">MoneyHelper</a><span>Free, government-backed guidance on saving, investing and borrowing</span></li><li><a href="https://register.fca.org.uk" target="_blank" rel="noopener">FCA Register</a><span>Check whether a firm is authorised before you use it</span></li><li><a href="https://www.actionfraud.police.uk" target="_blank" rel="noopener">Action Fraud</a><span>Report or check a suspected scam</span></li></ul>
+    <p class="handoff">The decision is yours. If you’re unsure, consider speaking to a qualified professional.</p>`;
+    actions=`<button class="btn btn-ghost" data-action="sheet-close">Done</button>`}
+  else if(s.type==='rollover'){title='Your loan payment arrived';
+    body=`${field('Amount you received','amount',d.amount,'money')}<div class="two">${field('Next payment lands on','nextDate',d.nextDate,'date')}${field('Next payment amount','nextAmount',d.nextAmount,'money')}</div><div id="live">${sheetLive()}</div><p class="handoff">Your regular costs and debts carry over. Only the dates change.</p>`;
+    actions=`<button class="btn btn-ghost" data-action="sheet-close">Cancel</button><button class="btn btn-primary" data-action="rollover-save">Start new period</button>`}
+  else if(s.type==='delete'){title='Delete your data?';body=`<p class="summary">This removes your budget, entries and debts from Runway on this device. You can’t undo this.</p>`;
+    actions=`<button class="btn btn-ghost" data-action="sheet-close">Cancel</button><button class="btn btn-danger" data-action="delete-yes">Delete my data</button>`}
+  else if(s.type==='copy'){title='Your data';one=true;body=`<label class="lbl" for="dump">Select all and copy</label><textarea id="dump" class="inp" readonly>${esc(JSON.stringify({profile:S.profile,entries:S.entries,debts:S.debts},null,2))}</textarea>`;actions=`<button class="btn btn-ghost" data-action="sheet-close">Done</button>`}
+  return `<div class="scrim" data-action="scrim"><div class="sheet" role="dialog" aria-modal="true" aria-labelledby="sheet-title"><span class="grab" aria-hidden="true"></span><h2 class="sheet-title" id="sheet-title">${title}</h2>${heard}${body}<div class="sheet-actions ${one?'one':''}">${actions}</div></div></div>`}
+
+/* ---------- render ---------- */
+function render(){
+  if(UI.route==='app'&&!S.session&&S.step!=='signup')UI.route=S.account&&S.account.pw?'signin':'landing';
+  document.body.classList.toggle('mode-site',UI.route==='landing');
+  if(UI.route==='landing'){document.getElementById('site').innerHTML=vLanding();save();return}
+  const view=document.getElementById('view');const m=view.querySelector('#main');const st=m?m.scrollTop:0;
+  let html;if(UI.route==='signin')html=`<div class="col">${vSignin()}</div>`;else if(S.step==='welcome')html=vWelcome();else if(S.step==='signup')html=`<div class="col">${vSignup()}</div>`;else if(S.step==='consent')html=`<div class="col">${vConsent()}</div>`;else if(S.step==='onboard')html=vOnboard();else if(S.step==='confirm')html=vConfirm();else html=vApp();
+  view.innerHTML=html+sheetView();
+  const m2=view.querySelector('#main');if(m2)m2.scrollTop=UI.keepScroll?st:0;UI.keepScroll=true;
+  const sc=view.querySelector('#scroller');if(sc)sc.scrollTop=sc.scrollHeight;
+  save()}
+function renderTry(){document.getElementById('try').innerHTML=CHIPS.map(c=>`<button class="chip" data-action="chip" data-text="${esc(c)}">${esc(c)}</button>`).join('')}
+let toastTimer;function toast(t){const el=document.getElementById('toast');el.textContent=t;el.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>el.classList.remove('show'),2800)}
+function openSheet(s){UI.sheet=s;render();const f=document.querySelector('.sheet input:not([type=date]), .sheet select, .sheet button');if(f){const empty=[...document.querySelectorAll('.sheet input[data-sf]')].find(i=>!i.value);(empty||document.querySelector('.sheet .btn-primary')||f).focus({preventScroll:true})}}
+function closeSheet(){UI.sheet=null;render()}
+
+/* ---------- flows ---------- */
+function onboardSubmit(q){S.chat.push({who:'me',text:q});
+  const all=S.chat.filter(m=>m.who==='me').map(m=>m.text).join(' ');const p=parseSetup(all);const prev=S.draft||{costs:[]};
+  const costs=prev.costs.slice();for(const c of p.costs)if(!costs.some(x=>x.cat===c.cat))costs.push(c);
+  S.draft={balance:p.balance??prev.balance??null,nextAmount:p.nextAmount??prev.nextAmount??null,nextDate:p.nextDate??prev.nextDate??null,costs};
+  const d=S.draft;
+  if(d.balance==null)S.chat.push({who:'bot',text:'How much do you have available right now?'});
+  else if(d.nextAmount==null||d.nextDate==null)S.chat.push({who:'bot',text:'When does your next loan payment land, and how much will it be? For example “£3,200 on 8 January”.'});
+  else{S.chat.push({who:'bot',text:'Got it. Check I’ve understood you properly.'});render();setTimeout(()=>{S.step='confirm';render()},700);return}
+  render();document.getElementById('ask')?.focus()}
+function appSubmit(q){const i=intent(q);const am=amounts(q);const amt=am.length?am[0].v:'';
+  if(i==='afford')openSheet({type:'afford',raw:q,d:{amount:amt,cat:guessCat(q,'Going out')}});
+  else if(i==='spend')openSheet({type:'entry',raw:q,d:{kind:'spend',amount:amt,cat:guessCat(q,'Other'),note:q}});
+  else if(i==='income'){const f=am.length?freqAfter(q,am[0].end):null;openSheet({type:'entry',raw:q,d:{kind:'income',amount:amt,freq:f&&f!=='term'?f:'once',note:q}})}
+  else if(i==='debt')openSheet({type:'debt',raw:q,d:debtGuess(q,amt)});
+  else openSheet({type:'resource',raw:q,d:{}})}
+function shortNote(q){return q.length>46?q.slice(0,44)+'…':q}
+function addEntry(e){S.entries.push(Object.assign({id:uid(),date:iso(today0()),t:Date.now()},e))}
+
+const ACT={
+  start(){S.step='signup';UI.errs={};render();document.getElementById('acc-name')?.focus()},
+  'pw-toggle-si'(){UI.showPw=!UI.showPw;render();document.getElementById('si-password')?.focus()},
+  'pw-toggle'(){UI.showPw=!UI.showPw;render();document.getElementById('acc-password')?.focus()},
+  signup(){const a=Object.assign({name:'',uni:'',email:'',year:'1st year'},S.account||{});const y=document.getElementById('acc-year');if(y)a.year=y.value;S.account=a;const e={};
+    if(!String(a.name).trim())e.name='Enter your name.';
+    if(!String(a.uni).trim())e.uni='Enter your university.';
+    if(!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(String(a.email).trim()))e.email='Enter an email address like you@university.ac.uk.';
+    if(UI.pw.length<8||!/\d/.test(UI.pw))e.password='Use at least 8 characters, including a number.';
+    if(a.invite&&String(a.invite).trim()&&!PARTNERS[String(a.invite).trim().toUpperCase().replace(/\s+/g,'')])e.invite='That code isn’t recognised. Check it with your bank or university, or leave it blank.';
+    UI.errs=e;const first=Object.keys(e)[0];
+    if(first){render();document.getElementById('acc-'+first)?.focus();return}
+    a.name=a.name.trim();a.email=a.email.trim();a.uni=a.uni.trim();
+    if(!S.partner&&UNI_PARTNERS[a.uni])S.partner=UNI_PARTNERS[a.uni];
+    if(a.invite&&PARTNERS[String(a.invite).trim().toUpperCase().replace(/\s+/g,'')])S.partner=PARTNERS[String(a.invite).trim().toUpperCase().replace(/\s+/g,'')];
+    const fresh0=fresh();const keep={account:a,partner:S.partner};
+    hashPw(UI.pw).then(hp=>{S=Object.assign(fresh0,keep);S.account.pw=hp;S.session=true;S.step='consent';UI.pw='';UI.showPw=false;UI.route='app';render();toast(`Account created. Welcome, ${a.name.split(' ')[0]}`)})},
+  'invite-open'(){UI.inviteOpen=true;render();document.getElementById('invite')?.focus()},
+  invite(){const v=(document.getElementById('invite')?.value||'').trim().toUpperCase().replace(/\s+/g,'');if(PARTNERS[v]){S.partner=PARTNERS[v];render();toast(`Runway is free through ${S.partner}`)}else toast('That code isn’t recognised. Check it with your bank or university.')},
+  consent(){if(S.consent.ai&&S.consent.data){S.step='onboard';render();document.getElementById('ask')?.focus()}},
+  go(b){S.step=b.dataset.to;render()},
+  example(){onboardSubmit(LALA)},
+  'cost-add'(){S.draft.costs.push({name:'',cat:'',amount:'',freq:'month'});render();const rows=document.querySelectorAll('.cost-row input[data-k=name]');rows[rows.length-1]?.focus()},
+  'cost-del'(b){S.draft.costs.splice(+b.dataset.i,1);render()},
+  'setup-confirm'(){const d=S.draft;const bal=num(d.balance),na=num(d.nextAmount);
+    if(!(bal>=0)){toast('Add how much you have available now.');return}if(!(na>0)){toast('Add your next loan payment amount.');return}
+    if(!d.nextDate||parseIso(d.nextDate)<=today0()){toast('Pick a payment date after today.');return}
+    const costs=d.costs.filter(c=>num(c.amount)>0&&String(c.name).trim()).map(c=>{const k=catOf(c.name);return {name:cap(String(c.name).trim()),cat:k==='Other'?cap(String(c.name).trim()):k,amount:num(c.amount),freq:c.freq}});
+    S.profile={opening:bal,nextAmount:na,nextDate:d.nextDate,periodStart:iso(today0()),costs};S.entries=S.entries||[];S.step='app';S.tab='home';
+    S.baseline=compute().allowance;UI.keepScroll=false;render();toast('Your weekly figure is ready')},
+  tab(b){S.tab=b.dataset.tab;UI.keepScroll=false;UI.sheet=null;render()},
+  chip(b){if(S.step!=='app'){toast('Finish setup first, then try this.');return}if(S.tab==='me')S.tab='home';appSubmit(b.dataset.text)},
+  mic(){mic()},
+  scrim(b,e){if(e.target===b)closeSheet()},
+  'sheet-close'(){closeSheet()},
+  'afford-skip'(){closeSheet();toast('Skipped. Nothing was logged.')},
+  'afford-go'(){const d=UI.sheet.d,amt=num(d.amount);if(!(amt>0)){toast('Enter an amount first.');return}addEntry({kind:'spend',amount:amt,cat:d.cat,note:shortNote(UI.sheet.raw||'')});UI.sheet=null;render();toast(`Logged ${gbp(amt)} to ${d.cat}`)},
+  'entry-save'(){const d=UI.sheet.d,amt=num(d.amount);if(!(amt>0)){toast('Enter an amount first.');return}
+    if(d.kind==='income')addEntry({kind:'income',amount:amt,freq:d.freq,cat:'Income',note:shortNote(d.note||'')});else addEntry({kind:'spend',amount:amt,cat:d.cat,note:shortNote(d.note||'')});
+    UI.sheet=null;render();toast(d.kind==='income'?`Added ${gbp(amt)}${d.freq!=='once'?' a '+d.freq:''} income`:`Logged ${gbp(amt)} to ${d.cat}`)},
+  'debt-save'(){const d=UI.sheet.d;if(!(num(d.amount)>0)){toast('Enter an amount first.');return}const db=buildDebt(d);S.debts.push(db);if(d.type!=='overdraft'&&d.type!=='loan')S.tipBnpl=true;UI.sheet=null;S.tab='debts';UI.openDebt=db.id;UI.keepScroll=false;render();toast(`${db.provider} added to your tracker`)},
+  'entry-del'(b){S.entries=S.entries.filter(e=>e.id!==b.dataset.id);render();toast('Entry deleted')},
+  'debt-toggle'(b){UI.openDebt=UI.openDebt===b.dataset.id?null:b.dataset.id;render()},
+  'inst-paid'(b){const d=S.debts.find(x=>x.id===b.dataset.id);d.instalments[+b.dataset.k].paid=true;render();toast('Marked as paid')},
+  'debt-del'(b){S.debts=S.debts.filter(x=>x.id!==b.dataset.id);render();toast('Debt removed')},
+  'tip-ok'(){S.tipSeen=true;render()},
+  'rollover-open'(){const P=S.profile;openSheet({type:'rollover',d:{amount:P.nextAmount,nextDate:iso(addDays(parseIso(P.nextDate),112)),nextAmount:P.nextAmount}})},
+  'rollover-save'(){const d=UI.sheet.d;const got=num(d.amount);if(!(got>=0)){toast('Enter the amount you received.');return}if(!d.nextDate||parseIso(d.nextDate)<=today0()){toast('Pick a next payment date after today.');return}
+    const carry=cashNow();const P=S.profile;P.opening=carry+got;P.periodStart=iso(today0());P.nextDate=d.nextDate;P.nextAmount=num(d.nextAmount)||P.nextAmount;
+    S.entries=S.entries.filter(e=>e.kind==='income'&&e.freq!=='once').map(e=>Object.assign(e,{date:iso(today0())}));
+    S.debts.forEach(db=>db.instalments.forEach(i=>{if(parseIso(i.due)<=today0())i.paid=true}));
+    S.baseline=compute().allowance;UI.sheet=null;S.tab='home';render();toast(`New period started with ${gbp(carry)} carried over`)},
+  redo(){S.step='onboard';S.chat=[];S.draft=null;render()},
+  'copy-data'(){const txt=JSON.stringify({profile:S.profile,entries:S.entries,debts:S.debts},null,2);
+    if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(txt).then(()=>toast('Copied your data'),()=>openSheet({type:'copy',d:{}}))}else openSheet({type:'copy',d:{}})},
+  'delete-ask'(){openSheet({type:'delete',d:{}})},
+  'delete-yes'(){UI.sheet=null;S=fresh();try{localStorage.removeItem(KEY)}catch(e){}UI.route='landing';render();window.scrollTo(0,0);toast('Your data has been deleted')},
+  site(){UI.sheet=null;UI.route='landing';render();window.scrollTo(0,0)},
+  'signin-go'(){UI.errs={};UI.forgot=false;UI.si={email:S.account?S.account.email:'',password:''};if(S.session){UI.route='app';render();return}UI.route='signin';render();document.getElementById(UI.si.email?'si-password':'si-email')?.focus()},
+  'signup-go'(){UI.errs={};if(S.session){UI.route='app';render();return}S.step='signup';UI.route='app';render();document.getElementById('acc-name')?.focus()},
+  'open-app'(){UI.route=S.session?'app':'signin';render()},
+  'scroll-to'(b){const el=document.getElementById(b.dataset.to);if(el)el.scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'})},
+  forgot(){UI.forgot=!UI.forgot;render()},
+  signout(){S.session=false;UI.sheet=null;UI.route='landing';render();window.scrollTo(0,0);toast('Signed out. Your budget is saved on this device.')},
+  signin(){const em=String(UI.si.email||'').trim().toLowerCase(),pw=UI.si.password||'';const e={};
+    if(!em)e.email='Enter your email.';if(!pw)e.password='Enter your password.';
+    if(!e.email&&(!S.account||!S.account.pw||String(S.account.email).trim().toLowerCase()!==em))e.email='There’s no Runway account with this email on this device.';
+    if(Object.keys(e).length){UI.errs=e;render();document.getElementById(e.email?'si-email':'si-password')?.focus();return}
+    hashPw(pw).then(hp=>{if(hp!==S.account.pw){UI.errs={password:'That password isn’t right. Try again.'};render();document.getElementById('si-password')?.focus();return}
+      S.session=true;UI.errs={};UI.si={};UI.route='app';S.tab='home';if(S.step==='signup')S.step='consent';render();toast(`Welcome back, ${String(S.account.name||'').split(' ')[0]}`)})}
+};
+
+/* ---------- voice ---------- */
+function mic(){const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  if(!SR){toast('Voice isn’t available in this browser. Type instead.');return}
+  if(UI.listening){try{UI.rec.stop()}catch(e){}return}
+  try{const rec=new SR();rec.lang='en-GB';rec.interimResults=true;UI.rec=rec;UI.listening=true;setMic();
+    rec.onresult=e=>{const t=[...e.results].map(r=>r[0].transcript).join(' ');const inp=document.getElementById('ask');if(inp){inp.value=t;UI.text=t}};
+    rec.onerror=e=>toast(e.error==='not-allowed'||e.error==='service-not-allowed'?'Microphone access is blocked here. Type instead.':'Didn’t catch that. Try again or type it.');
+    rec.onend=()=>{UI.listening=false;setMic();document.getElementById('ask')?.focus()};rec.start()}
+  catch(e){UI.listening=false;setMic();toast('Voice isn’t available here. Type instead.')}}
+function setMic(){const b=document.querySelector('[data-action=mic]');if(b){b.classList.toggle('rec',UI.listening);b.setAttribute('aria-label',UI.listening?'Stop listening':'Speak to Runway')}}
+
+/* ---------- events ---------- */
+document.addEventListener('click',e=>{const b=e.target.closest('[data-action]');if(!b)return;const a=b.dataset.action;if(ACT[a]){if(b.tagName==='BUTTON')e.preventDefault();ACT[a](b,e)}});
+document.addEventListener('submit',e=>{const f=e.target.closest('[data-form]');if(!f)return;e.preventDefault();const q=f.querySelector('.ask').value.trim();if(!q)return;UI.text='';if(f.dataset.form==='onboard')onboardSubmit(q);else appSubmit(q)});
+document.addEventListener('input',e=>{const t=e.target;
+  if(t.classList.contains('ask')){UI.text=t.value;return}
+  if(t.dataset.si){UI.si[t.dataset.si]=t.value;if(UI.errs[t.dataset.si]){delete UI.errs[t.dataset.si];t.removeAttribute('aria-invalid');document.getElementById('si-'+t.dataset.si+'-err')?.remove()}return}
+  if(t.dataset.acc){const k=t.dataset.acc;if(k==='password')UI.pw=t.value;else{S.account=S.account||{};S.account[k]=t.value}
+    const hintFor=()=>k==='uni'?uniHint(S.account):k==='email'?emailHint(S.account):k==='password'?'<p class="hint" id="pw-hint">At least 8 characters, including a number.</p>':'';
+    if(UI.errs[k]){delete UI.errs[k];t.removeAttribute('aria-invalid');const er=document.getElementById('acc-'+k+'-err');if(er)er.outerHTML=hintFor();if(k==='password')t.setAttribute('aria-describedby','pw-hint');else t.removeAttribute('aria-describedby')}
+    else if(k==='uni'||k==='email'){const h=document.getElementById(k+'-hint');if(h)h.outerHTML=hintFor()}
+    if(k!=='password')save();return}
+  if(t.dataset.draft){S.draft[t.dataset.draft]=t.value;save();return}
+  if(t.dataset.cost!=null){S.draft.costs[+t.dataset.cost][t.dataset.k]=t.value;save();return}
+  if(t.dataset.sl){S.studentLoan[t.dataset.sl]=num(t.value)||0;const L=S.studentLoan;const o=document.querySelector('[data-out=salary]');if(o)o.textContent=gbp(L.salary);const r=document.querySelector('[data-out=repay]');if(r)r.textContent=gbp(Math.max(0,(L.salary-25000)*0.09/12),true);save();return}
+  if(t.dataset.sf&&UI.sheet){UI.sheet.d[t.dataset.sf]=t.value;if(t.dataset.sf==='type'){const d=UI.sheet.d;if(d.type==='overdraft'){d.apr=39.9;d.free=500}else if(d.type==='loan'){d.apr=19.9;d.months=12}render();document.getElementById('sf-type')?.focus();return}const live=document.getElementById('live');if(live)live.innerHTML=sheetLive()}});
+document.addEventListener('change',e=>{const t=e.target;
+  if(t.dataset.consent){S.consent[t.dataset.consent]=t.checked;render();document.querySelector(`[data-consent=${t.dataset.consent}]`)?.focus();return}
+  if(t.hasAttribute('data-notify')){S.notify=t.checked;save();toast(t.checked?'Reminders on':'Reminders off')}});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&UI.sheet)closeSheet()});
+
+(function init(){if(S.step==='welcome')S.step='signup';
+  if(S.profile&&!(S.account&&S.account.pw))S.session=true;
+  const h=(location.hash||'').slice(1);
+  if(h==='signin')UI.route=S.session?'app':'signin';
+  else if(h==='signup'){UI.route='app';if(!S.session)S.step='signup'}
+  else if(h==='app')UI.route=S.session?'app':'signin';
+  else UI.route='landing';
+  if(UI.route==='signin')UI.si={email:S.account?S.account.email:''};
+  renderTry();render()})();
+</script>
+</body>
+</html>
